@@ -1,0 +1,298 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Khai báo chung, vui lòng KHÔNG THAY ĐỔI phần này nếu không cần thiết
+%%%%%%%%%%%%%%%%%%%% Các packages cơ bản
+\usepackage[top=1.8cm, bottom=1.8cm, left=1.8cm, right=1.8cm]{geometry}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[utf8]{vietnam}
+\usepackage{amsmath,amsxtra,amssymb,latexsym, amscd,amsthm}
+\usepackage{import}
+\usepackage{graphicx,todo}
+\usepackage{xstring}
+\usepackage{mathrsfs}
+\usepackage{tikz}
+\usetikzlibrary{calc,intersections}
+\usetikzlibrary{arrows}
+\usepackage{tkz-base}
+\usepackage{tkz-euclide}
+\usepackage{tkz-tab}
+\usepackage{import}
+\usepackage{multicol}
+\usepackage{listings}
+\usepackage{lscape}
+\usepackage{booktabs}
+\usepackage{tabto}
+\usepackage{caption}[=v3.0]
+\usepackage[colorlinks,hyperindex,plainpages=false,unicode]{hyperref}
+\newenvironment{tabs}[1]{\flushleft\TabPositions{#1}}{\endflushleft}
+%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%% Change Latex font
+% \usepackage{mathpazo} 
+%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%% Sử dụng gói dethi.sty
+\usepackage[baitap]{dethi}
+%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%% Bảng biến thiên
+\usepackage{tkz-tab}
+%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%% K-maps
+\input{kvmacros}
+%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%% K-maps_RosenBook
+\usetikzlibrary{matrix,fit}
+\tikzset{kmap/.style={ %% from Schrödinger's cat
+    matrix of math nodes,nodes in empty cells,
+    nodes={draw,minimum size=12mm,anchor=center},
+    column 1/.style={nodes={draw=none,minimum size=0,text=blue,font=\normalsize}},
+    row 1/.style={nodes={draw=none,minimum size=0,text=blue,font=\normalsize}},
+    column sep=-.5*\pgflinewidth,
+        row sep=-.5*\pgflinewidth
+    }
+}
+%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%% Bảng đáp án
+\usepackage{longtable}
+\usepackage{tabularx}
+\parskip 3pt
+\headsep=12pt
+%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%% Thiết lập
+\trangcuoi{dbPage}
+\hovaten{Họ và tên}         % Nếu không muốn có dòng này không gõ lệnh
+% \tenlop{Tên lớp}          % Nếu không muốn có dòng này không gõ lệnh
+\sobaodanh{Số báo danh}     % Nếu không muốn có dòng này không gõ lệnh
+\khoanhd{\cboxv}{}
+\daungoac{\cboxx}{}
+\chuphuongan{\small\bfseries\Alph}
+\mauchu{blue}
+\PSNrandseed{\time}
+\parindent 10pt
+\graphicspath{{hinh-duan07/}{temp/}}
+\duongkefalse
+\usepackage{nonfloat}
+\setlength{\baselineskip}{12truept}
+\graphicspath{{hinh-maudethi/}}
+% \nguondetrue
+%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%% Custom footnote
+\usepackage[symbol]{footmisc}
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+\makeatletter
+\def\footnoterule{%
+  \kern-3\p@
+  \hbox{%
+    %\tikz \fill[left color=blue!50!black, right color=white]
+    \tikz \fill[left color=blue, right color=blue]
+        (0,0) rectangle (6.1in,.5pt);%
+  }%
+  \kern 2.6\p@}
+\makeatother
+%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%% Color packages
+\usepackage[dvipsnames]{xcolor}
+\usepackage{color}
+\usepackage[framemethod=tikz]{mdframed}
+% \definecolor{UMTBlue}{RGB}{50, 50, 225}
+% \definecolor{UMTBlue}{RGB}{35, 25, 225}
+% \definecolor{UMTRed}{RGB}{250, 25, 35}
+\definecolor{UMTBlue}{RGB}{0, 0, 255}
+\definecolor{UMTRed}{RGB}{255, 0, 0}
+\mdfdefinestyle{theoremstyle}{%
+  % linecolor=black,linewidth=1pt,%
+  linecolor=UMTBlue,linewidth=1pt,%
+  frametitlerule=true,%
+  % frametitlebackgroundcolor=gray!20,%
+  frametitlebackgroundcolor=UMTBlue,
+  innertopmargin=\topskip,
+}
+%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%% Watermark
+\usepackage{draftwatermark}
+\usepackage{tikz}
+\SetWatermarkText{\tikz{\node[opacity=0.15]{\includegraphics{Resources/Logos/STAC.png}};}}
+\SetWatermarkAngle{0}
+\SetWatermarkScale{1.5}
+%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%% Footer và Header
+\usepackage{fancyhdr}
+\fancypagestyle{statementpage}{ % Trang đề bài
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{0pt}
+  \fancyfoot{}
+  \fancyfoot[C]{\textcolor{black}{\textbf{Trang {\thepage}}}}
+}
+
+\fancypagestyle{solutionpage}{ % Trang lời giải
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{0pt}
+  \fancyfoot{}
+  \fancyfoot[L]{\textcolor{black}{\textbf{CÂU LẠC BỘ HỌC THUẬT KHOA CÔNG NGHỆ UMT}} \\ \textcolor{black}{\text{UMT School of Technology Academic Club}}}
+  \fancyfoot[R]{\textcolor{black}{\textbf{Trang {\thepage}}}}
+}
+%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%% Chèn code C/C++
+\definecolor{black}{cmyk}{0,0,0,1}             
+\definecolor{white}{cmyk}{0,0,0,0}
+\definecolor{darkgrey}{cmyk}{0,0,0,0.97}  
+\definecolor{greyBackground}{cmyk}{0.0000, 0.0000, 0.0000, 0.0510}
+\definecolor{greenComments}{cmyk}{
+1.0000, 0.0000, 1.0000, 0.4980}
+\definecolor{blueKeywords}{cmyk}{0.8222, 0.8222, 0.0000, 0.2941}
+%\definecolor{pinkOtherKeywords}{cmyk}{0.1676, 0.4973, 0.0000, 0.2745}
+\definecolor{pinkOtherKeywords}{cmyk}{0.0000, 0.2695, 0.7730, 0.4471}
+\definecolor{brownFunctions}{cmyk}{0.0000, 0.1368, 0.3419, 0.5412}
+\definecolor{orangeLibraries}{cmyk}{0.0000, 0.3871, 0.9677, 0.1490}
+\definecolor{redStrings}{cmyk}{0.0000, 0.8712, 0.8712, 0.3608}
+\lstset{
+    language=C++,
+    numbers=none,
+    rulesep=10pt,
+    %xleftmargin=12pt,
+    %framexleftmargin=-2pt,
+    %framexrightmargin=-5pt,
+    showtabs=false,
+    showspaces=false,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=true,
+    % backgroundcolor=\color{greyBackground},
+    % rulecolor=\color{darkgrey},
+    commentstyle=\color{greenComments},
+    morecomment=[s][\color{greenComments}]{/*+}{*/},
+    morecomment=[s][\color{greenComments}]{/*-}{*/},
+    basicstyle=\ttfamily\color{black},
+    stringstyle=\color{redStrings},
+    % frame=trbl,
+    frame=none,
+    framesep=1pt,
+    numbersep=7pt,
+    belowcaptionskip=1\baselineskip,
+    columns=fullflexible,
+    captionpos=b,
+    extendedchars=true,
+    keepspaces=true, 
+    stepnumber=5, 
+    tabsize=4, 
+    title=\lstname,
+    % Keywords like string, int, false, true ...
+    keywordstyle=\color{blue},
+    morekeywords={partial, var, value, get, set},
+    % Keywords like if/else, switch/case ...
+    emphstyle=\color{pinkOtherKeywords},
+    emph={if, else, return, throw, switch, case, while, do, while, using, break, continue, for},
+    % Collection of your functions
+    % emphstyle={[2]\color{brownFunctions}},
+    % emph={[2]},
+    % Collection of your libraries
+    % emphstyle={[3]\color{orangeLibraries}},
+    % emph={[3]iostream}
+}
+\newcolumntype{b}{X}
+\newcolumntype{s}{>{\hsize=.75\hsize}X}
+%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%% Line spacing
+\usepackage{setspace}
+\renewcommand{\baselinestretch}{1.0} 
+%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%% Check if a page is odd or even
+\usepackage{scrextend}
+%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%% Custom column style
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%% Custom caption style
+\captionsetup[table]{labelfont=bf, labelsep=period, justification=centering}
+\captionsetup[figure]{labelfont=bf, labelsep=period, justification=centering}
+%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%% Custom matrix
+\makeatletter
+\renewcommand*\env@matrix[2][1.0]{%
+\edef\arraystretch{#1}%
+\hskip -\arraycolsep
+\let\@ifnextchar\new@ifnextchar
+\array{#2}}
+\makeatother
+%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%% Substack alignment
+\makeatletter
+\newcommand{\subalign}[1]{%
+  \vcenter{%
+    \Let@ \restore@math@cr \default@tag
+    \baselineskip\fontdimen10 \scriptfont\tw@
+    \advance\baselineskip\fontdimen12 \scriptfont\tw@
+    \lineskip\thr@@\fontdimen8 \scriptfont\thr@@
+    \lineskiplimit\lineskip
+    \ialign{\hfil$\m@th\scriptstyle##$&$\m@th\scriptstyle{}##$\hfil\crcr
+      #1\crcr
+    }%
+  }%
+}
+\makeatother
+%%%%%%%%%%%%%%%%%%%% 
+
+%%%%%%%%%%%%%%%%%%%% Diagonal box
+\usepackage{diagbox}
+%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%% Customize enumerate, https://ctan.math.illinois.edu/macros/latex/contrib/tasks/tasks-manual.pdf
+\usepackage{enumitem}
+\usepackage{tasks}
+%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%% Exercise box
+\usepackage{setspace}
+\usepackage{thmtools}
+\usepackage{framed}
+\usepackage{tcolorbox}
+\usepackage{environ}
+\tcbuselibrary{theorems,skins,breakable}
+
+\usepackage{xpatch}
+\makeatletter
+\xpatchcmd{\@thmr}{:}{.}{}{}
+\makeatother
+
+\newtcbtheorem[auto counter]{mytheorem}{Theorem}
+{
+    enhanced,
+    frame hidden,
+    titlerule=0mm,
+    toptitle=1mm,
+    bottomtitle=1mm,
+    fonttitle=\bfseries,
+    coltitle=black,
+    colbacktitle=cyan!20!white,
+    colback=cyan!10!white,
+    separator sign={. },
+}{thm}
+
+\NewDocumentCommand{\thm}{m+m}{
+    \begin{mytheorem}{#1}{}
+        #2
+    \end{mytheorem}
+}
+
+\NewDocumentCommand{\thmr}{mm+m}{
+    \begin{mytheorem}{#1}{#2}
+        #3
+    \end{mytheorem}
+}
+%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Kết thúc khai báo chung

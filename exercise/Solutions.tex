@@ -1,0 +1,322 @@
+%%%%%%%%%%%%%%%%%%%% Template
+\lstset{
+  breaklines=true,
+  breakatwhitespace=true,
+  keepspaces=true,
+  basicstyle=\fontfamily{zi4}\selectfont\large,
+  columns=fullflexible,
+  inputencoding=utf8,
+  extendedchars=true
+}
+
+
+\begin{center}
+    \textbf{\textcolor{black}{\large\LARGE NỀN TẢNG CÔNG NGHỆ THÔNG TIN 2}}
+
+    \textbf{\large CÁCH SỬ DỤNG VÒNG LẶP FOR, WHILE}
+
+    \large\LaTeX\, bởi Ngô Hoàng Tùng
+\end{center}
+
+% -----------------------------------------------------
+
+\section*{Cấu trúc lặp FOR, WHILE}
+\subsection*{\textbf{I. Mục tiêu}}
+\begin{enumerate}[label=\alph*.]
+    \item Cấu trúc lặp FOR, WHILE
+    \item Cách sử dụng vòng lặp FOR, WHILE
+    \item Cách sử dụng vòng lặp lồng nhau
+    \item Cách sử dụng vòng lặp với mảng 1 chiều
+    \item Cách sử dụng vòng lặp với mảng 2 chiều
+\end{enumerate}
+\subsection*{\textbf{II. Nội dung}}
+\begin{enumerate}[label=\alph*.]
+    \item Cấu trúc lặp FOR, WHILE
+    \begin{itemize}
+        \item Cấu trúc lặp FOR: Dùng để lặp một đoạn mã với số lần lặp xác định.
+        \item Cấu trúc lặp WHILE: Dùng để lặp một đoạn mã khi điều kiện là đúng.
+    \end{itemize}
+
+    \item Cách sử dụng vòng lặp FOR, WHILE
+    \begin{itemize}
+        \item Vòng lặp FOR:
+
+        Cú pháp:
+        \begin{lstlisting}
+        for i in range(start, end, step):
+            # Do something
+        \end{lstlisting}
+        \vspace{-3.5em}
+        Hoặc:
+        \begin{lstlisting}
+        for i in range(start, end, step):
+            # Do something
+        \end{lstlisting}
+        \vspace{-3.5em}
+        Giải thích:
+        \begin{itemize}
+            \item \texttt{start}: giá trị bắt đầu (mặc định là 0)
+            \item \texttt{end}: giá trị kết thúc (không bao gồm giá trị này)
+            \item \texttt{step}: bước nhảy (mặc định là 1)
+            \item \texttt{range(end)}: lặp từ 0 đến end-1
+            \item \texttt{range(start, end)}: lặp từ start đến end-1
+            \item \texttt{range(start, end, step)}: lặp từ start đến end-1 với bước nhảy là step
+        \end{itemize}
+
+        Ví dụ:
+        \begin{lstlisting}
+        for i in range(5):
+            print(i)  # In ra 0, 1, 2, 3, 4
+        \end{lstlisting}
+        \vspace{-4.5em}
+        -- range(5) tương đương với range(0, 5, 1) hoặc range (0, 5).
+    \end{itemize}
+
+    \begin{itemize}
+        \item Vòng lặp WHILE:
+
+        Cú pháp:
+        \begin{lstlisting}
+        while condition:
+            # Do something
+        \end{lstlisting}
+        \vspace{-3.5em}
+        Giải thích:
+        \begin{itemize}
+            \item \texttt{condition}: điều kiện để tiếp tục lặp (nếu điều kiện là đúng thì lặp)
+        \end{itemize}
+
+        Ví dụ 1:
+        \begin{lstlisting}
+        i = 0
+        while i < 5:
+            print(i)  # In ra 0, 1, 2, 3, 4
+            i += 1
+        \end{lstlisting}
+        \vspace{-4.5em}
+        -- Vòng lặp while sẽ tiếp tục lặp cho đến khi điều kiện là sai.\\
+        Ví dụ 2:
+        \begin{lstlisting}
+            while True:
+                print("Hello, World!")
+        \end{lstlisting}
+        \vspace{-4.5em}
+        -- Vòng lặp while sẽ lặp vô hạn vì điều kiện luôn đúng. Để dừng vòng lặp, bạn có thể sử dụng lệnh \texttt{break}.
+        \begin{lstlisting}
+            while True:
+                print("Hello, World!")
+                break
+        \end{lstlisting}
+    \end{itemize}
+    \vspace{-6em}
+    \item Cách sử dụng vòng lặp lồng nhau
+    \begin{itemize}
+        \item Vòng lặp lồng nhau là khi bạn đặt một vòng lặp bên trong một vòng lặp khác. Điều này cho phép bạn lặp qua nhiều cấp độ dữ liệu.
+        \item Cú pháp:
+        \begin{lstlisting}
+        for i in range(n):
+            for j in range(m):
+                # Do something
+        \end{lstlisting}
+        \vspace{-4.5em}
+        Hoặc:
+        \begin{lstlisting}
+        while condition1:
+            while condition2:
+                # Do something
+        \end{lstlisting}
+        \vspace{-4.5em}
+        Giải thích:
+        \begin{itemize}
+            \item Vòng lặp ngoài sẽ lặp qua các giá trị từ 0 đến n-1.
+            \item Vòng lặp trong sẽ lặp qua các giá trị từ 0 đến m-1 cho mỗi giá trị của vòng lặp ngoài.
+        \end{itemize}
+        Ví dụ 1:
+        \begin{lstlisting}
+        for i in range(3):
+            for j in range(2):
+                print(f"i: {i}, j: {j}")
+        \end{lstlisting}
+        \vspace{-4.5em}
+        -- Kết quả sẽ là:\\
+        i: 0, j: 0\\
+        i: 0, j: 1\\
+        i: 1, j: 0\\
+        i: 1, j: 1\\
+        i: 2, j: 0\\
+        i: 2, j: 1\\
+        Ví dụ 2:
+        \begin{lstlisting}
+        i = 0
+        while i < 3:
+            j = 0
+            while j < 2:
+                print(f"i: {i}, j: {j}")
+                j += 1
+            i += 1
+        \end{lstlisting}
+        \vspace{-4.5em}
+        -- Kết quả như ví dụ 1.
+    \end{itemize}
+    \item Cách sử dụng vòng lặp với mảng 1 chiều
+    \begin{itemize}
+        \item Khi bạn có một mảng 1 chiều, bạn có thể sử dụng vòng lặp lồng nhau để truy cập từng phần tử của mảng.
+        \item Cú pháp:
+        \begin{lstlisting}
+        for i in range(len(array)):
+            # Do something with array[i]
+        \end{lstlisting}
+        \vspace{-4.5em}
+        Hoặc:
+        \begin{lstlisting}
+        while condition:
+            # Do something with array[i]
+        \end{lstlisting}
+        \vspace{-4.5em}
+        Giải thích:
+        \begin{itemize}
+            \item Sử dụng vòng lặp for hoặc while để lặp qua các chỉ số của mảng.
+            \item Truy cập từng phần tử của mảng bằng cách sử dụng chỉ số.
+        \end{itemize}
+        Ví dụ:
+        \begin{lstlisting}
+        array = [1, 2, 3, 4, 5]
+        for i in range(len(array)):
+            print(array[i], end=' ')
+        \end{lstlisting}
+        \vspace{-4.5em}
+        -- Kết quả sẽ là: 1 2 3 4 5\\
+        Hoặc:
+        \begin{lstlisting}
+        array = [1, 2, 3, 4, 5]
+        i = 0
+        while i < len(array):
+            print(array[i], end=' ')  
+            i += 1
+        \end{lstlisting}
+        \vspace{-4.5em}
+        -- Kết quả cũng sẽ là: 1 2 3 4 5
+    \end{itemize}
+    \item Cách sử dụng vòng lặp với mảng 2 chiều
+    \begin{itemize}
+        \item Khi bạn có một mảng 2 chiều, bạn có thể sử dụng vòng lặp lồng nhau để truy cập từng phần tử của mảng.
+        \item Cú pháp:
+        \begin{lstlisting}
+        for i in range(len(array)):
+            for j in range(len(array[i])):
+                # Do something with array[i][j]
+        \end{lstlisting}
+        \vspace{-4.5em}
+        Hoặc:
+        \begin{lstlisting}
+        while condition1:
+            while condition2:
+                # Do something with array[i][j]
+        \end{lstlisting}
+        \vspace{-4.5em}
+        Giải thích:
+        \begin{itemize}
+            \item Sử dụng vòng lặp for hoặc while để lặp qua các chỉ số của mảng 2 chiều.
+            \item Truy cập từng phần tử của mảng bằng cách sử dụng chỉ số hàng và cột.
+        \end{itemize}
+        Ví dụ:
+        \begin{lstlisting}
+        array = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        for i in range(len(array)):
+            for j in range(len(array[i])):
+                print(array[i][j], end=' ')
+        \end{lstlisting}
+        \vspace{-4.5em}
+        -- Kết quả sẽ là: 1 2 3 4 5 6 7 8 9\\
+        Hoặc:
+        \begin{lstlisting}
+        array = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        i = 0
+        while i < len(array):
+            j = 0
+            while j < len(array[i]):
+                print(array[i][j], end=' ')
+                j += 1
+            i += 1
+        \end{lstlisting}
+        \vspace{-4.5em}
+        -- Kết quả cũng sẽ là: 1 2 3 4 5 6 7 8 9
+    \end{itemize}
+\end{enumerate}
+\subsection*{\textbf{III. Bài tập}}
+\subsection*{\textbf{Bài 1: }}
+\textcolor{black}{Cho mảng 1 chiều gồm $n$ số nguyên dương, hãy tính tổng các số trong mảng.}\\
+\textcolor{black}{\textbf{Input: }}\\
+\textcolor{black}{Dòng đầu chứa số nguyên dương duy nhất $n$ (0 < $n$ < 1000) là số lượng phần tử của mảng.}\\
+\textcolor{black}{Dòng thứ hai chứa $n$ số nguyên là các phần tử của mảng $a_{0}, a_{1}, \ldots, a_{n-1}$ ($-10^9 \leq a_{i} \leq 10^9$).}\\
+\textcolor{black}{\textbf{Output: }}\\
+\textcolor{black}{In ra một số nguyên là tổng các phần tử của mảng.}\\
+\begin{table}[h!]
+\centering
+\begin{tabularx}{0.8\textwidth}{|X|X|}
+\hline
+\textbf{Input} & \textbf{Output} \\
+\hline
+5 & 19 \\
+9 \quad -5 \quad 20 \quad -10 \quad 5 & \\
+\hline
+\end{tabularx}
+\end{table}\\
+
+\subsection*{\textbf{Bài 2: }}
+\textcolor{black}{Cho $n$ và $m$ đều là số nguyên dương. Hãy xuất 1 ma trận $a_{i, j}$ có kích thước $n$ x $m$ với $a_{i, j}$ tăng dần từ 1 tới $n$ x $m$ và theo đường ZigZag.}\\
+\textcolor{black}{\textbf{Input: }}\\
+\textcolor{black}{Dòng đầu chứa hai số nguyên dương $n$, $m$ (1 $\leq$ $n, m$ $\leq$ 1000) là kích thước của ma trận.}\\
+\textcolor{black}{\textbf{Output: }}\\
+\textcolor{black}{In ra ma trận $a_{i, j}$ theo định dạng như ví dụ dưới đây.}\\
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{0.8\textwidth}{|X|X|}
+\hline
+\textbf{Input} & \textbf{Output} \\
+\hline
+3 \quad 4 & 1\quad 2\quad 3\quad 4 \\
+& 8\quad 7 \quad 6\quad 5 \\
+& 9\quad 10\quad 11\quad 12 \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection*{\textbf{Bài 3: }}
+\textcolor{black}{Cho $n$ là số nguyên dương. Hãy xuất ra dãy số nguyên tố bé hơn hoặc bằng $n$.}\\
+\textcolor{black}{\textbf{Input: }}\\
+\textcolor{black}{Dòng đầu chứa số nguyên dương duy nhất $n$ (1 $\leq n \leq$ 100) là số nguyên cần kiểm tra.}\\
+\textcolor{black}{\textbf{Output: }}\\
+\textcolor{black}{In ra các số nguyên tố bé hơn hoặc bằng $n$.}\\
+\begin{table}[h!]
+\centering
+\begin{tabularx}{0.8\textwidth}{|X|X|}
+\hline
+\textbf{Input} & \textbf{Output} \\
+\hline
+10 & 2\quad 3\quad 5\quad 7 \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection*{\textbf{Bài 4:}}
+\textcolor{black}{Cho $n, m$ là số nguyên dương và 1 ma trận $n$ x $m$. Hãy sắp xếp các phần tử trong ma trận theo thứ tự tăng dần theo cả cột và dòng.}\\
+\textcolor{black}{\textbf{Input: }}\\
+\textcolor{black}{Dòng đầu chứa hai số nguyên dương $n$, $m$ (1 $\leq$ $n, m$ $\leq$ 100) là kích thước của ma trận.}\\
+\textcolor{black}{Dòng thứ hai chứa $n$ x $m$ số nguyên là các phần tử của ma trận.}\\
+\textcolor{black}{\textbf{Output: }}\\
+\textcolor{black}{In ra các phần tử của ma trận đã sắp xếp theo thứ tự tăng dần.}\\
+\begin{table}[h!]
+\centering
+\begin{tabularx}{0.8\textwidth}{|X|X|}
+\hline
+\textbf{Input} & \textbf{Output} \\
+\hline
+3 \quad 3 & 1\quad 4\quad 6\\
+5 \quad 1 \quad 7 & 2\quad 5\quad 7\\
+9 \quad 11 \quad 3 & 3\quad 9\quad 11\\
+2 \quad 6 \quad 4 & \\
+\hline
+\end{tabularx}
+\end{table}
