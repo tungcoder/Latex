@@ -1,0 +1,78 @@
+%%%%%%%%%%%%%%%%%%%% K_maps
+\kvnoindex
+% \karnaughmap{5}{$f(x_i)$}%
+% {{$x_1$}{$x_2$}{$x_3$}{$x_4$}{$x_5$}}%
+% {%
+% 0011011001100110%
+% 0110011001000110%
+% }%
+\karnaughmap{4}{}%
+{}%
+{%
+    00110100%
+    01100110%
+}%
+{%
+% Single Ones
+\textcolor{Blue}{
+    \put(2.5,3.5){\oval(0.9,0.9)[]}
+    \put(7.5,2.5){\oval(0.9,0.9)[]}
+    \put(0.5,1.5){\oval(0.9,0.9)[]}
+}
+% Pairs of Ones
+\put(1,2.5){\oval(1.9,0.9)[]}
+% Quadruples of Ones
+\textcolor{Yellow}{
+    \put(4,2){\oval(1.9,1.9)[]}}%
+\textcolor{Green}{
+    \put(6,4){\oval(1.9,1.9)[b]}
+    \put(6,0){\oval(1.9,1.9)[t]}}%
+\textcolor{Red}{
+    \put(5,0.5){\oval(3.9,0.9)[r]}
+    \put(3,0.5){\oval(3.9,0.9)[l]}}
+}
+
+%%%%%%%%%%%%%%%%%%%% Bảng biến thiên
+\begin{tikzpicture}
+    \node[kmap] (km){
+                    &yz &y\bar z&\bar y\bar z&\bar y z\\
+        x          &   & 1     &1           &        \\
+        w\bar x     & 1 & 1     & 1          &        \\
+        \bar w\bar x&   & 1     & 1          &        \\
+        \bar w x    & 1 & 1     & 1          & 1      \\
+    };
+
+    \draw[cyan] (km-5-2.center) circle(3mm);
+    \node[draw=cyan,rounded corners,inner sep=-1mm,rounded corners=3mm,fit={(km-3-2) (km-3-3)}]{};
+    \node[draw=cyan,rounded corners,inner sep=-1mm,rounded corners=3mm,fit={(km-2-3) (km-2-4) (km-5-3) (km-5-4)}]{};
+
+    \begin{scope}
+        \clip (km-1-1.north west) rectangle (km-5-5.south east);
+        \path (km-5-5)+(0:1) node (km-5-5t){};
+        \node[draw=cyan,rounded corners,inner sep=-1mm,rounded corners=3mm,fit={(km-5-5) (km-5-5t)}]{};
+    \end{scope}
+\end{tikzpicture}
+
+%%%%%%%%%%%%%%%%%%%% Lưu ý câu 5.1
+\centering
+\begin{tikzpicture}
+    \node[kmap] (km){
+                    &yz &y\bar z&\bar y\bar z&\bar y z\\
+        x          &  1 &  1   &   1    &        \\
+        \bar x     &  1 &      &   1    &  1      \\
+    };
+    %\draw[blue] (km-5-2.center) circle(5mm);
+    \node[draw=blue,rounded corners,inner sep=-2mm,rounded corners=3mm,fit={(km-2-2) (km-2-3)}]{};
+    \node[draw=blue,rounded corners,inner sep=-2mm,rounded corners=3mm,fit={(km-3-4) (km-2-4)}]{};
+
+    \begin{scope}
+        \clip (km-2-2.north west) rectangle (km-3-5.south east);
+        \path (km-3-5)+(0:1) node (km-3-5t){};
+        \node[draw=blue,rounded corners,inner sep=-2mm,rounded corners=3mm,fit={(km-3-5) (km-3-5t) }]{};
+    \end{scope}
+    \begin{scope}
+        \clip (km-2-5.north west) rectangle (km-3-1.south east);
+        \path (km-3-1)+(1:1) node (km-3-1t){};
+        \node[draw=blue,rounded corners,inner sep=1.6mm,rounded corners=3.2mm,fit={(km-3-1) (km-3-1t)}]{};
+    \end{scope}
+\end{tikzpicture}

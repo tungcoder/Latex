@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2025.5.26)  29 MAY 2025 16:01
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2025.5.26)  8 JUN 2025 16:48
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**c:/Users/ngoho/Documents/latex/NTCNTT2_For_While/Main.tex
-(c:/Users/ngoho/Documents/latex/NTCNTT2_For_While/Main.tex
+**c:/Users/ngoho/Documents/latex/CTDL&GT_st_qu/Main.tex
+(c:/Users/ngoho/Documents/latex/CTDL&GT_st_qu/Main.tex
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-04>
 (C:\Users\ngoho\AppData\Local\Programs\MiKTeX\tex/latex/base\article.cls
@@ -1218,7 +1218,7 @@ Package: tabularx 2023/07/08 v2.11c `tabularx' package (DPC)
 \TX@cols=\count421
 \TX@ftn=\toks63
 )
-Package probsoln Info: Random Seed = 961 on input line 73.
+Package probsoln Info: Random Seed = 1008 on input line 73.
  (C:\Users\ngoho\AppData\Local\Programs\MiKTeX\tex/latex/nonfloat\nonfloat.sty) (C:\Users\ngoho\AppData\Local\Programs\MiKTeX\tex/latex/footmisc\footmisc.sty
 Package: footmisc 2025/05/09 v7.0b a miscellany of footnote facilities
  (C:\Users\ngoho\AppData\Local\Programs\MiKTeX\tex/latex/footmisc\footmisc-2022-02-14.sty
@@ -1646,32 +1646,27 @@ Package hyperref Info: Link coloring ON on input line 13.
 \@outlinefile=\write9
 \openout9 = `Main.out'.
 
- (MainPages/SolutionPage.tex (Solutions.tex
-LaTeX Font Info:    Trying to load font information for U+msa on input line 18.
+ (MainPages/SolutionPage.tex (Solutions.tex (C:\Users\ngoho\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstlang1.sty
+File: lstlang1.sty 2023/02/27 1.9 listings language file
+)
+LaTeX Font Info:    Trying to load font information for U+msa on input line 19.
  (C:\Users\ngoho\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 18.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 19.
  (C:\Users\ngoho\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-LaTeX Font Info:    Trying to load font information for U+lasy on input line 18.
+LaTeX Font Info:    Trying to load font information for U+lasy on input line 19.
  (C:\Users\ngoho\AppData\Local\Programs\MiKTeX\tex/latex/base\ulasy.fd
 File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
 )
-LaTeX Font Info:    Trying to load font information for U+rsfs on input line 18.
+LaTeX Font Info:    Trying to load font information for U+rsfs on input line 19.
  (C:\Users\ngoho\AppData\Local\Programs\MiKTeX\tex/latex/jknappen\ursfs.fd
 File: ursfs.fd 1998/03/24 rsfs font definition file (jk)
 )
-LaTeX Font Info:    Trying to load font information for T5+zi4 on input line 45.
-LaTeX Font Info:    No file T5zi4.fd. on input line 45.
-
-
-LaTeX Font Warning: Font shape `T5/zi4/m/n' undefined
-(Font)              using `T5/cmr/m/n' instead on input line 45.
-
-LaTeX Font Info:    Trying to load font information for T5+cmtt on input line 58.
-(C:\Users\ngoho\AppData\Local\Programs\MiKTeX\tex/latex/vntex\t5cmtt.fd
+LaTeX Font Info:    Trying to load font information for T5+cmtt on input line 49.
+ (C:\Users\ngoho\AppData\Local\Programs\MiKTeX\tex/latex/vntex\t5cmtt.fd
 File: t5cmtt.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
 
@@ -1684,7 +1679,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 <Resources/Logos/STAC.png, id=30, 178.79597pt x 178.79597pt>
 File: Resources/Logos/STAC.png Graphic file (type png)
 <use Resources/Logos/STAC.png>
-Package pdftex.def Info: Resources/Logos/STAC.png  used on input line 82.
+Package pdftex.def Info: Resources/Logos/STAC.png  used on input line 67.
 (pdftex.def)             Requested size: 178.79552pt x 178.79552pt.
 [1
 
@@ -1701,7 +1696,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 
 File: Resources/Logos/STAC.png Graphic file (type png)
 <use Resources/Logos/STAC.png>
-Package pdftex.def Info: Resources/Logos/STAC.png  used on input line 149.
+Package pdftex.def Info: Resources/Logos/STAC.png  used on input line 117.
 (pdftex.def)             Requested size: 178.79552pt x 178.79552pt.
 [2]
 
@@ -1713,18 +1708,9 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 
 File: Resources/Logos/STAC.png Graphic file (type png)
 <use Resources/Logos/STAC.png>
-Package pdftex.def Info: Resources/Logos/STAC.png  used on input line 207.
+Package pdftex.def Info: Resources/Logos/STAC.png  used on input line 183.
 (pdftex.def)             Requested size: 178.79552pt x 178.79552pt.
 [3]
-Underfull \hbox (badness 10000) in paragraph at lines 248--265
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 267--272
-
- []
-
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -1734,21 +1720,9 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 
 File: Resources/Logos/STAC.png Graphic file (type png)
 <use Resources/Logos/STAC.png>
-Package pdftex.def Info: Resources/Logos/STAC.png  used on input line 272.
+Package pdftex.def Info: Resources/Logos/STAC.png  used on input line 240.
 (pdftex.def)             Requested size: 178.79552pt x 178.79552pt.
-[4])
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.59999pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.59999pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
-
-File: Resources/Logos/STAC.png Graphic file (type png)
-<use Resources/Logos/STAC.png>
-Package pdftex.def Info: Resources/Logos/STAC.png  used on input line 11.
-(pdftex.def)             Requested size: 178.79552pt x 178.79552pt.
-[5])
+[4]))
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -1760,30 +1734,26 @@ File: Resources/Logos/STAC.png Graphic file (type png)
 <use Resources/Logos/STAC.png>
 Package pdftex.def Info: Resources/Logos/STAC.png  used on input line 19.
 (pdftex.def)             Requested size: 178.79552pt x 178.79552pt.
-[6] (Main.aux)
+[5] (Main.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2020/03/25>
  ***********
-
-
-LaTeX Font Warning: Some font shapes were not available, defaults substituted.
-
 Package rerunfilecheck Info: File `Main.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
  ) 
 Here is how much of TeX's memory you used:
- 40925 strings out of 474486
- 834227 string characters out of 5743755
- 2102542 words of memory out of 5000000
- 62125 multiletter control sequences out of 15000+600000
- 575809 words of font info for 80 fonts, out of 8000000 for 9000
+ 40929 strings out of 474486
+ 834428 string characters out of 5743755
+ 2185542 words of memory out of 5000000
+ 62134 multiletter control sequences out of 15000+600000
+ 574137 words of font info for 79 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 113i,20n,129p,590b,2603s stack positions out of 10000i,1000n,20000p,200000b,200000s
- <C:\Users\ngoho\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1095.pk><C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/vntex/vnr/vnbx10.pfb><C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/vntex/vnr/vnbx12.pfb><C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/vntex/vnr/vnr10.pfb><C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/vntex/vnr/vnr12.pfb><C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/vntex/vnr/vnr8.pfb><C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/vntex/vnr/vntt10.pfb>
-Output written on Main.pdf (6 pages, 354805 bytes).
+ 113i,20n,129p,650b,2747s stack positions out of 10000i,1000n,20000p,200000b,200000s
+<C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/vntex/vnr/vnbx10.pfb><C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/vntex/vnr/vnbx12.pfb><C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/vntex/vnr/vnr10.pfb><C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/vntex/vnr/vnr12.pfb><C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/vntex/vnr/vnr8.pfb><C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/vntex/vnr/vntt10.pfb><C:/Users/ngoho/AppData/Local/Programs/MiKTeX/fonts/type1/vntex/vnr/vntt12.pfb>
+Output written on Main.pdf (5 pages, 355793 bytes).
 PDF statistics:
- 272 PDF objects out of 1000 (max. 8388607)
- 127 named destinations out of 1000 (max. 500000)
+ 258 PDF objects out of 1000 (max. 8388607)
+ 120 named destinations out of 1000 (max. 500000)
  114 words of extra memory for PDF output out of 10000 (max. 10000000)
 

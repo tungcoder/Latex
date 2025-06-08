@@ -1,0 +1,5928 @@
+%Tệp mẫu làm đề thi trắc nghiệm phiên bản 3.2
+%Tác giả Nguyễn Hữu Điển (ĐHKHTN, Hà Nội)
+% Đề trắc nghiệm được thiết kế trên phông Unicode,
+%Đã dùng lớp vieexamdesign.cls có sửa đổi
+%Cùng với gói lệnh dethi.sty tạo ra:
+%Đề thi trắc nghiệm từ một bộ đề sinh ra các câu hởi được 
+%sắp xếp ngẫu nhiên và các chi tiết của câu hỏi cũng được 
+%xắp sếp ngẫu nhiên. Mỗi đề thi sinh ra đều có thể in ra đáp án riêng biệt.
+%vieexamdesign.cls đòi hỏi các gói lệnh enumerate, multicol, shortlst, keyval.
+%% \CharacterTable
+%%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%%   Digits        \0\1\2\3\4\5\6\7\8\9
+%%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%%   Dollar        \$     Percent       \%     Ampersand     \&
+%%   Acute accent  \'     Left paren    \(     Right paren   \)
+%%   Asterisk      \*     Plus          \+     Comma         \,
+%%   Minus         \-     Point         \.     Solidus       \/
+%%   Colon         \:     Semicolon     \;     Less than     \<
+%%   Equals        \=     Greater than  \>     Question mark \?
+%%   Commercial at \@     Left bracket  \[     Backslash     \\
+%%   Right bracket \]     Circumflex    \^     Underscore    \_
+%%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%%   Right brace   \}     Tilde         \~}
+%% randomly select 25 problems from derivatives.tex and add to
+%% the data set called 'deriv'
+%% Display the problems
+%% You may need to change \theenumi back here
+%% randomly select 25 problems from probspaces.tex and add to
+%% the data set called 'spaces'
+%% Display the problems
+%% You may need to change \theenumi back here
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{dethi}[2016/10/27 v3.0]
+\RequirePackage{ifthen}
+ \RequirePackage{etoolbox}
+\RequirePackage{xkeyval}
+\RequirePackage{graphicx}
+\RequirePackage{answers}
+% \RequirePackage{xstring}
+\RequirePackage{calc}
+\RequirePackage{tikz}
+\RequirePackage{enumerate}
+\RequirePackage{color}
+\RequirePackage{multicol}
+% \RequirePackage{lastpage}
+\RequirePackage{refcount}
+% \newboolean{baithi}
+\newboolean{baitap}
+% \DeclareOption{baithi}{
+% \setboolean{baithi}{true}
+% }
+\DeclareOption{baitap}{
+\setboolean{baitap}{true}
+}
+
+\newif\ifkhungbeamer 
+ \khungbeamerfalse
+%%%%%%%%%%%%
+% Counts
+\newcount\br
+\newcount\bl
+\newcount\na
+\newcount\nb
+\newcount\tcdsav
+\newcount\tcl
+\newcount\tcd
+\newcount\tcn
+\newcount\cumtcl
+\newcount\cumpartcl
+% Dimens
+\newdimen\lftside
+\newdimen\rtside
+\newdimen\hpic
+\newdimen\vpic
+\newdimen\strutilg
+\newdimen\picwd
+\newdimen\topheight
+\newdimen\ilg
+\newdimen\lpic
+\newdimen\lwindowsep \newdimen\rwindowsep	% VK 10 Feb 93
+\lwindowsep0.5\baselineskip			% "
+\rwindowsep0.5\baselineskip			% "
+\newdimen\cumpar
+% Tokens
+\newtoks\twa
+\newtoks\la
+\newtoks\ra
+\newtoks\ha
+\newtoks\pictoc
+% Boxes
+\newbox\rawtext
+\newbox\holder
+\newbox\windowbox
+\newbox\wartext
+\newbox\finaltext
+\newbox\aslice
+\newbox\bslice
+\newbox\wbox
+\newbox\wstrutbox
+\newbox\picbox
+\newbox\waslice
+\newbox\wbslice
+\newbox\fslice
+% Another strut
+\def\wstrut{\relax\ifmmode\copy\wstrutbox\else\unhcopy\wstrutbox\fi}
+%
+\long\def\window[#1,#2,#3,#4] {%
+\vskip\parskip\everypar{}
+\global\cumpar=0pt
+\global\cumpartcl=0
+\global\cumtcl=0
+    \tcd=#1
+    \lftside=0pt \rtside=0pt
+%    \hpic=\linewidth
+    \twa={} \la={} \ra={} \ha={}
+\setbox\wbox=\hbox{(}
+\computeilg
+\pictoc={#3}
+\setbox\windowbox=\vbox{\hbox{#3}}
+\setbox\wbox=\vbox{\hbox{\noindent#4}}
+\picwd=\wd\windowbox
+\hpic=\picwd
+\vpic=\ht\windowbox\advance\vpic\dp\windowbox
+\if #2c\lftside=\linewidth\advance\lftside-\picwd\rtside=0.5\lftside
+       \lftside=\rtside
+\else \if #2r\lftside=\linewidth\advance\lftside-\picwd
+              \rtside=0pt
+      \else\rtside=\linewidth\advance\rtside-\picwd
+           \lftside=0pt
+      \fi
+\fi
+%
+\if #2c
+ \ifdim\rtside<72pt
+  \rtside=0pt\lftside=0pt
+  \setbox\windowbox=\vbox{%
+    \hrule width\picwd height0pt depth0pt
+    \vskip.5\parskip\box\windowbox\vskip.5\parskip
+    \hrule width\picwd height0pt depth0pt}
+  \vpic=\ht\windowbox\advance\vpic\dp\windowbox
+ \fi
+ \parskip0pt % Within the window area a \parskip>0pt may look ugly
+\fi
+\ifnum\picwd=0\setbox\picbox=\vbox{\hbox{\noindent#4}}   % without picture
+                               \hpic=\wd\picbox % calculate dimensions
+              \ifnum\lftside=0\rtside=\linewidth\advance\rtside-\hpic
+              \else\ifnum\rtside=0\lftside=\linewidth\advance\lftside-\hpic
+              \else\rtside=0.5\linewidth\advance\rtside-0.5\hpic
+                   \lftside=\rtside
+              \fi\fi
+\else\setbox\picbox=\vbox{
+ \if #2r \vskip-2.5ex \fi %themvao
+\hsize=\hpic\vbox to\vpic{\box\windowbox\vfill}%
+\ifdim\ht\wbox>0pt\vskip\ilg\vbox{\hsize=\hpic\noindent#4
+%
+% See above, this is the second part of glue
+%
+\if #2c
+ \ifdim\rtside=0pt \ifdim\lftside=0pt
+ \vskip\parskip\hrule width\hpic height0pt depth0pt
+ \fi \fi
+\fi
+}
+\fi
+}\fi
+\vpic=\ht\picbox\advance\vpic\dp\picbox
+%                                                        % window
+\ifdim\lftside>0pt\advance\lftside-\lwindowsep\fi  % VK 10 Feb 93
+\ifdim\rtside>0pt\advance\rtside-\rwindowsep\fi    % "
+\global\br=\rtside \global\bl=\lftside
+\ifnum\picwd=0
+\ifdim\vpic>0pt\picwd=\hpic
+\else\vpic=\ht\picbox\advance\vpic\dp\picbox
+\fi
+\fi
+    \global\tcl=0 \lpic=0pt
+    \loop\global\advance\tcl by 1 \lpic=\tcl\baselineskip
+    \ifdim\lpic<\vpic\repeat
+    \vpic=\lpic
+    \global\cumtcl=\tcl
+%
+    \ifnum\bl>0\la={ 0pt \lftside}\fi
+    \ifnum\br>0\ra={ 0pt \rtside}\fi
+    \ifnum\tcd>0\ha={ 0pt \linewidth}\fi
+    \ifnum\tcl<1\global\tcl=1\fi
+    \createparshapespec
+    \tcd=#1                        % restore the lintel
+    \global\tcdsav=#1
+%
+\ifdim\parskip>0pt
+    \def\par{\hfill\vadjust{\vskip0pt\vbox to\parskip{\vss}}
+             \global\advance\cumpartcl by 1
+             \global\advance\cumpar by \parskip
+             \global\lpic=\ht\wstrutbox
+             \global\advance\lpic by \dp\wstrutbox
+             \ifdim\cumpar<\lpic
+             \else\advance\cumpar by -\lpic
+                  \advance\cumtcl by -1
+             \fi
+             \egroup\global\tcd=\tcdsav
+             \setbox\wartext=\vbox{\unvbox\rawtext}
+\setbox\rawtext=\vbox\bgroup
+\clubpenalty=0\widowpenalty=0
+\ifnum\brokenpenalty<\maxdimen\else\brokenpenalty=9999\fi
+\tolerance=1000
+\global\lpic=\ht\wstrutbox
+\global\advance\lpic by \dp\wstrutbox
+%
+% Pick up header lines
+%
+\ifnum\tcd>0\vbadness=10000\splittopskip0pt
+ \loop\setbox\holder=\vsplit\wartext to \lpic
+  \hpic=\wd\holder\prune\holder\hpic
+  \ifdim\ht\holder=\parskip
+   \hbox{\vrule height\parskip width0pt depth0pt}
+   \typeout{A paragraph ended within headlines! Please change }
+   \typeout{the number of headlines for the window environment!}
+   \global\advance\tcd by -1
+  \else\hbox{\vbox{\box\holder\unskip}}
+   \global\advance\tcd by -1
+  \fi
+ \ifnum\tcd>0\repeat
+ \global\tcd=0
+ \ifdim\ht\wartext>0pt
+ \ifdim\ht\wartext=\parskip\global\advance\tcdsav by 1
+       \setbox\holder=\vsplit\wartext to \lpic
+       \hbox{\vrule height\parskip width0pt depth0pt}
+       \global\advance\cumpar by -\parskip
+       \global\advance\cumpartcl by -1
+ \fi\fi
+\fi
+%
+% Pick up lines beside window, the rest too
+%
+\global\tcn=0
+\topheight=0pt
+\ifdim\ht\wartext>0pt\vbadness=10000\splittopskip0pt
+ \loop\setbox\holder=\vsplit\wartext to \lpic
+  \hpic=\wd\holder\prune\holder\hpic
+  \ifdim\ht\holder=\parskip
+  \hbox{\vrule height\parskip width0pt depth0pt}
+  \global\advance\topheight by \parskip
+  \else
+   \setbox\fslice=\hbox{\box\holder}
+    \hpic=\ht\fslice
+    \advance\hpic by\dp\fslice
+   \ifdim\hpic>\lpic
+   \global\advance\topheight by\hpic
+   \hbox{\vbox{\box\fslice\vss}}
+   \else\ifdim\hpic=0pt\relax
+   \else\global\advance\topheight by \lpic
+   \hbox{\vbox{\box\fslice}}\fi\fi
+  \fi
+ \ifdim\ht\wartext>0pt\repeat
+\tcn=0
+\loop\advance\tcn by 1
+\advance\topheight by -\lpic
+\ifdim\topheight>0pt\repeat
+\hpic=\topheight
+\ifdim\hpic<0pt\advance\tcn by -1\fi
+\global\topheight=\tcn\lpic
+\fi
+%
+% If the indented part is not completed we have to generate a
+% new token for the \parshape list
+%
+\ifnum\tcn<\cumtcl
+\global\tcl=\cumtcl
+\global\advance\topheight by\cumpartcl\parskip
+             \global\advance\tcl by -\tcn \global\twa={}
+             \ifnum\tcl>0
+\global\vpic=\topheight
+\global\topheight=\tcl\lpic
+\global\advance\vpic by \topheight
+\global\advance\vpic by \lpic
+             \createparshapespec
+             \parshape=\tcn \the\twa
+             \else\parshape=0
+             \fi
+\else\parshape=0\fi}
+\else\def\par{\\}
+\fi % new definition of \par in case of \parskip>0 ends here
+% This is where we start to pick up the paragraph(s)
+    \setbox\rawtext=\vbox\bgroup\unvbox\rawtext\unskip
+    \clubpenalty=0\widowpenalty=0
+    \ifnum\brokenpenalty<\maxdimen\else\brokenpenalty=9999\fi
+    \tolerance=1000
+    \parshape=\tcn \the\twa }
+%
+\def\endwindow{%
+    \global\tcd=\tcdsav
+    \egroup\vskip\parskip\parshape=0 % reset parshape; end \box\rawtext
+    \vbadness=10000
+    \splittopskip=0pt
+% Typeset the lines above the window
+\ifnum\tcd>0\setbox\holder=\vsplit\rawtext to \tcd\baselineskip
+\tcn=\tcd
+\loop\advance\tcn -1
+\setbox\fslice=\vsplit\holder to\baselineskip
+\prune\fslice\linewidth
+\topheight=0pt
+\ifnum\dp\fslice>\dp\wstrutbox
+       \advance\topheight-\dp\fslice
+       \advance\topheight\dp\wstrutbox
+       \advance\topheight\ilg\fi
+\hbox to\linewidth{\box\fslice}
+\vskip-\topheight
+\ifdim\ht\holder>0pt\repeat
+\fi
+% Now we build the boxes beside the window
+\global\topheight=\tcl\baselineskip
+\ifnum\cumpartcl>0\global\tcl=\cumtcl
+      \global\topheight=\vpic
+\fi
+\ifnum\bl>0 \ifnum\br>0 \multiply\topheight by 2\fi\fi
+\ifnum\bl>0\setbox\holder=\vsplit\rawtext to\topheight
+\else\ifnum\br>0\setbox\holder=\vsplit\rawtext to\topheight\fi\fi
+\tcn=\tcl \na=0 \nb=0
+\ifnum\bl>0 \ifnum\br>0 \multiply\tcn by 2\fi\fi
+\ifnum\bl>0\na=\tcn\ifnum\br>0\divide\na by 2\fi\fi
+\ifnum\br>0\nb=\tcn\ifnum\bl>0\divide\nb by 2\fi\fi
+\ifnum\na=0\ifnum\nb=0
+      \setbox\waslice=\vbox to\vpic{\vss}
+      \setbox\wbslice=\vbox to\vpic{\vss}
+      \bl=1\br=1
+      \vskip\ilg
+\fi\fi
+% both sides
+\ifnum\na>0 \ifnum\nb>0
+\loop\advance\nb -1
+\advance\na -1
+\setbox\aslice=\vsplit\holder to\baselineskip
+\prune\aslice\lftside
+\setbox\waslice=\vbox{\unvbox\waslice\hbox
+to\lftside{\box\aslice\hfil}}
+\setbox\bslice=\vsplit\holder to\baselineskip
+\prune\bslice\rtside
+\setbox\wbslice=\vbox{\unvbox\wbslice\hbox
+to\rtside{\box\bslice\hfil}}
+\ifnum\nb>0\repeat
+\fi\fi
+% only text on the left side
+\ifnum\na>0
+    \loop\advance\na -1
+    \setbox\aslice=\vsplit\holder to\baselineskip
+    \prune\aslice\lftside
+    \setbox\waslice=\vbox{\unvbox\waslice\hbox
+    to\lftside{\box\aslice\hfil}}
+    \ifdim\ht\holder>0pt\repeat
+\fi
+% only text on the right side
+\ifnum\nb>0
+    \loop\advance\nb -1
+    \setbox\bslice=\vsplit\holder to\baselineskip
+    \prune\bslice\rtside
+    \setbox\wbslice=\vbox{\unvbox\wbslice\hbox
+    to\rtside{\box\bslice\hfil}}
+    \ifdim\ht\holder>0pt\repeat
+\fi
+% fixing the dimensions of the window part
+\ifnum\bl=0\topheight=\ht\wbslice
+\else\ifnum\br=0\topheight=\ht\waslice
+      \else\ifdim\ht\waslice>\ht\wbslice\topheight=\ht\waslice
+            \else\topheight=\ht\wbslice\fi\fi\fi
+% ship out the window material to the main vertical list
+\ifnum\bl>0 \ifnum\br>0 \ifdim\ht\wbslice<\topheight
+\setbox\wbslice=\vbox to\topheight{\box\wbslice\vfill}
+\fi\fi\fi
+\setbox\windowbox=\vbox{\hbox to\linewidth{%
+\ifnum\bl>0\box\waslice\hfill\fi%
+\vbox to\topheight{\hrule width\picwd height0pt depth0pt\vskip0pt%
+\vfill\unvbox\picbox%
+\ifnum\picwd>0\vfill\fi%
+\vss}\ifnum\br>0\hfill\vbox{\box\wbslice}\fi}}%
+\unvbox\windowbox%
+\loop
+ \setbox\bslice=\vsplit\rawtext to\baselineskip
+ \prune\bslice\linewidth
+ \setbox\wbslice=\vbox{\hbox to\linewidth{\box\bslice\hfil}}
+ \unvbox\wbslice
+ \ifdim\ht\rawtext>0pt
+\repeat
+}% FINITO
+% What else do we need?
+\def\prune#1#2{
+% take a \vbox containing a single \hbox,
+% \unvbox it, and cancel the \lastskip
+% put in a \hbox of width #2
+ \unvbox#1 \setbox#1=\lastbox % \box#1 now is an \hbox
+ \ifdim\ht#1=\parskip
+ \setbox#1=\hbox to#2{\vrule height\parskip depth0pt width0pt\hfill}
+ \else\ifdim\ht#1=0pt\relax
+ \else\setbox#1=\hbox to#2{\wstrut\unhbox#1\unskip}\fi\fi}
+%
+\def\createparshapespec{%
+\global\tcn=0
+\ifnum\bl>0\global\tcn=\tcl\else\ifnum\br>0\global\tcn=\tcl\fi\fi
+\na=0 \nb=0
+\ifnum\bl>0 \ifnum\br>0 \multiply\tcn by 2\fi\fi
+\ifnum\bl>0\na=\tcn\ifnum\br>0\divide\na by 2\fi\fi
+\ifnum\br>0\nb=\tcn\ifnum\bl>0\divide\nb by 2\fi\fi
+\global\advance\tcn by\tcd \global\advance\tcn by1
+\ifnum\tcd>0
+\loop\twa=\expandafter{\the\twa\the\ha}\advance\tcd -1
+\ifnum\tcd>0\repeat
+\fi
+\ifnum\bl>0 \ifnum\br>0
+\loop\twa=\expandafter{\the\twa\the\la}\advance\na -1
+\twa=\expandafter{\the\twa\the\ra}\advance\nb -1
+\ifnum\na>0\repeat
+\fi\fi
+\ifnum\na>0
+\loop\twa=\expandafter{\the\twa\the\la}\advance\na -1
+\ifnum\na>0\repeat
+\fi
+\ifnum\nb>0
+\loop\twa=\expandafter{\the\twa\the\ra}\advance\nb -1
+\ifnum\nb>0\repeat
+\fi
+\global\twa=\expandafter{\the\twa 0pt \the\linewidth}}
+%
+\def\computeilg{% compute the interline glue
+ \tcl=0\ilg=0pt\strutilg=0pt
+ \loop\setbox\wbox=\hbox{\char\tcl}
+ \ifdim\ht\wbox>\ilg\ilg=\ht\wbox\fi
+ \ifdim\dp\wbox>\strutilg\strutilg=\dp\wbox\fi
+ \advance\tcl by 1
+ \ifnum\tcl<128\repeat
+ \ht\wbox=\ilg
+ \dp\wbox=\strutilg
+ \strutilg=\ht\wbox %\advance\strutilg by\ilg
+ \ifdim\strutilg>\baselineskip
+  \typeout{character with height greater baselineskip found in font}
+  \typeout{baselineskip changed to 1.5 of that height!}
+  \baselineskip=1.5\strutilg
+ \fi
+ \global\ilg=\baselineskip
+ \global\advance\ilg-\ht\wbox \global\advance\ilg-\dp\wbox
+ \strutilg=\ht\wbox \advance\strutilg by\ilg
+ \setbox\wstrutbox=\hbox{\vrule height\strutilg depth\dp\wbox width0pt}}
+%
+% frames
+%
+\def\framepic#1{\vbox{%
+\hsize\expandafter\wd\csname #1box\endcsname
+\advance\hsize .8pt \hrule%
+\hbox to\hsize%
+{\vrule\hfill\vbox to\expandafter\ht\csname #1box\endcsname{%
+\expandafter\box\csname #1box\endcsname }\hfill\vrule}\hrule\vss}}
+%
+\def\wframepic#1{\vbox{%
+\hsize\expandafter\wd\csname #1box\endcsname
+\advance\hsize 3.8pt\hrule%
+\hbox to\hsize%
+{\vrule\hfill\vbox{\kern1.5pt%
+\expandafter\box\csname #1box\endcsname
+\kern1.5pt}\hfill\vrule}\hrule\vss}}
+% caption
+\def\winstepcounter#1{\global\advance\csname c@#1\endcsname 1
+    {\let\@elt\@stpelt \csname cl@#1\endcsname}}
+
+\def\winrefstepcounter#1{\winstepcounter{#1}\let\@tempa\protect
+\def\protect{\noexpand\protect\noexpand}%
+\edef\@currentlabel{\csname p@#1\endcsname\csname the#1\endcsname}%
+\let\protect\@tempa}
+\long\def\w@dblarg#1{\@ifnextchar[{#1}{\w@xdblarg{#1}}}
+\long\def\w@xdblarg#1#2\par{#1[{#2}]#2\par}
+
+\def\wincaption{\winrefstepcounter\@captype \w@dblarg{\@wincaption\@captype}}
+
+\long\def\@wincaption#1[#2]#3\par{\par\addcontentsline{\csname
+  ext@#1\endcsname}{#1}{\protect\numberline{\csname
+  the#1\endcsname}{\ignorespaces #2}}\begingroup
+    \@parboxrestore
+    \normalsize
+    \@makewincaption{\csname fnum@#1\endcsname}{\ignorespaces #3}\par
+  \endgroup}
+
+\long\def\@makewincaption#1#2{%
+   \setbox\@tempboxa\hbox{ #1\enspace{#2}}%
+   \ifdim\wd\@tempboxa>\picwd
+      { #1\enspace{#2\par}}
+   \else
+      \hbox to\picwd{\hfil\box\@tempboxa\hfil}
+   \fi}
+
+\long\def\figwindow[#1,#2,#3,#4] {%
+     \advance\c@figure -1
+     \begin{window}[#1,#2,{#3},{\def\@captype{figure}%
+        \wincaption#4\par}] }
+
+\long\def\tabwindow[#1,#2,#3,#4] {%
+     \advance\c@table -1
+     \begin{window}[#1,#2,{#3},{\def\@captype{table}%
+        \wincaption#4\par}] }
+
+\def\endfigwindow{\end{window}}
+\def\endtabwindow{\end{window}}
+
+%%%%%%%%%%%%centerpage
+\setlength\@tempdima        {\paperwidth}
+    \addtolength\@tempdima      {-\textwidth}
+    \setlength\oddsidemargin    {.5\@tempdima}
+    \addtolength\oddsidemargin  {-1in}
+    \setlength\marginparwidth   {.5\@tempdima}
+    \addtolength\marginparwidth {-\marginparsep}
+    \addtolength\marginparwidth {-0.4in}
+    \addtolength\marginparwidth {-.4in}
+    \setlength\evensidemargin\oddsidemargin
+
+  \def\ps@headings{%
+    \let\@oddfoot\@empty\let\@evenfoot\@oddfoot
+    \def\@oddhead{{\slshape\rightmark}\hfil\thepage}\let\@evenhead\@oddhead
+    \let\@mkboth\markboth
+    \def\chaptermark##1{%
+      \markright {\MakeUppercase{%
+        \ifnum \c@secnumdepth >\m@ne
+            \@chapapp\ \thechapter. \ %
+        \fi
+        ##1}}}}
+%%%%%%%%%Shortlst
+\newlength\runitemsep
+\setlength\runitemsep{1em plus .5em minus .5em}
+\newenvironment{runitemize}{%
+   \ifnum \@itemdepth >\thr@@\@toodeep\else
+   \advance\@itemdepth\@ne
+   \edef\@itemitem{labelitem\romannumeral\the\@itemdepth}%
+   \def\@itemlabel{\csname\@itemitem\endcsname}%
+   \let\@item\run@item
+   \let\par\relax
+   \ignorespaces\fi}
+   {\unskip\hspace\runitemsep\ignorespacesafterend}
+\newenvironment{runenumerate}{%
+   \ifnum \@enumdepth >\thr@@\@toodeep\else
+   \advance\@enumdepth\@ne
+   \edef\@enumctr{enum\romannumeral\the\@enumdepth}%
+   \usecounter{\@enumctr}%
+   \def\@itemlabel{\csname label\@enumctr \endcsname}%
+   \let\@item\run@item
+   \let\par\@empty
+   \ignorespaces\fi}
+   {\unskip\hspace\runitemsep\ignorespacesafterend}
+\def\run@item[#1]{%
+   \ifhmode\unskip\hspace\runitemsep\else\leavevmode\fi
+   \if@noitemarg
+      \@noitemargfalse
+      \if@nmbrlist\refstepcounter{\@listctr}\fi
+   \fi
+   \mbox{#1}\kern\labelsep\ignorespaces}
+\newlength\shortitemwidth
+\setlength\shortitemwidth{65pt}
+\newenvironment{shortitemize}[1][\hbox to \shortitemwidth{\hfil}]{%
+   \ifnum \@itemdepth >\thr@@\@toodeep\let\endsh@rtitem\relax\else
+   \ifx\item\sh@rtitem\sh@rtnesterr\let\endsh@rtitem\relax\else
+   \advance\@itemdepth\@ne
+   \edef\@itemitem{labelitem\romannumeral\the\@itemdepth}%
+   \settowidth\shortitemwidth{#1}%
+   \list{}{\addtolength\leftmargin\itemindent
+           \addtolength\leftmargin{-\labelwidth}%
+           \addtolength\leftmargin{-\labelsep}%
+           \setlength\itemindent\z@}%
+   \item\relax
+   \@rightskip\@flushglue \rightskip\@rightskip
+   \let\endsh@rtitem\noindent
+   \let\item\sh@rtitem
+   \def\@itemlabel{\csname\@itemitem\endcsname}%
+   \fi\fi\ignorespaces}%
+   {\endsh@rtitem\endlist}
+\newenvironment{shortenumerate}[1][\hbox to \shortitemwidth{\hfil}]{%
+   \ifnum \@enumdepth >\thr@@\@toodeep\let\endsh@rtitem\relax\else
+   \ifx\item\sh@rtitem\sh@rtnesterr\let\endsh@rtitem\relax\else
+   \advance\@enumdepth\@ne
+   \edef\@enumctr{enum\romannumeral\the\@enumdepth}%
+   \settowidth\shortitemwidth{#1}%
+   \list{}{\addtolength\leftmargin\itemindent
+           \addtolength\leftmargin{-\labelwidth}%
+           \addtolength\leftmargin{-\labelsep}%
+           \setlength\itemindent\z@}%
+   \item\relax
+   \@rightskip\@flushglue \rightskip\@rightskip
+   \let\endsh@rtitem\noindent
+   \let\item\sh@rtitem
+   \usecounter{\@enumctr}%
+   \def\@itemlabel{\csname label\@enumctr \endcsname}%
+   \fi\fi\ignorespaces}%
+   {\endsh@rtitem\endlist}
+\ifx\TX@ftn\undefined
+   \newtoks\TX@ftn
+   \long\def\TX@ftntext#1{%
+     \edef\@tempa{\the\TX@ftn\noexpand\footnotetext
+                       [\the\csname c@\@mpfn\endcsname]}%
+     \global\TX@ftn\expandafter{\@tempa{#1}}}%
+   \long\def\TX@xftntext[#1]#2{%
+     \global\TX@ftn\expandafter{\the\TX@ftn\footnotetext[#1]{#2}}}
+\fi
+\def\sh@rtitem{%
+  \endsh@rtitem
+  \@inmatherr\item
+  \@ifnextchar [\sh@rt@item{\@noitemargtrue \sh@rt@item[\@itemlabel]}}
+\def\sh@rt@item[#1]{%
+   \def\endsh@rtitem{\endlrbox\endgroup%
+      \setlength\@tempdima{\wd\@tempboxa}%
+      \addtolength\@tempdima\labelsep
+      \setlength\@tempdimb\shortitemwidth
+      \addtolength\@tempdimb{2\labelsep}%
+      \addtolength\@tempdimb{\labelwidth}%
+      \addtolength\@tempdima{-1sp}% subtract a Very Small Length
+      \divide\@tempdima by \@tempdimb%
+      \addtolength\@tempdima{1sp}%  add one
+      \multiply\@tempdimb by \@tempdima%
+      \addtolength\@tempdimb{-\wd\@tempboxa}%
+      \usebox\@tempboxa
+      \global\TX@ftn\expandafter{\expandafter}\the\TX@ftn
+      \hspace\@tempdimb}%
+   \if@noitemarg
+      \@noitemargfalse
+      \if@nmbrlist\refstepcounter{\@listctr}\fi
+   \fi
+   \settowidth\@tempdima{#1}%
+   \ifdim\@tempdima>\labelwidth\PackageWarning{shortlst}%
+      {label too wide
+       (set \string\labelwidth\space to at least \the\@tempdima)}%
+   \fi
+   \begingroup\lrbox{\@tempboxa}%
+      \let\@footnotetext\TX@ftntext\let\@xfootnotenext\TX@xftntext
+      \makebox[\labelwidth][r]{#1}%
+      \hspace{\labelsep}\ignorespaces}
+\newcommand{\sh@rtnesterr}{\PackageError{shortlst}
+   {nested short-lists}
+   {don't nest short-list environments within each other}}
+%
+% 
+\newif\iflietkeda \lietkedafalse
+\newif\ifshowanswers
+\showanswersfalse
+\let\showanswers\showanswerstrue
+\let\hideanswers\showanswersfalse
+\DeclareOption{answers}{\showanswerstrue}
+\DeclareOption{noanswers}{\showanswersfalse}
+\newif\ifusedefaultprobargs
+\DeclareOption{usedefaultargs}{\usedefaultprobargstrue}
+\DeclareOption{nousedefaultargs}{\usedefaultprobargsfalse}
+\usedefaultprobargsfalse
+\newcommand*{\prob@showdraftlabel}[2]{}
+\newcommand*{\draftproblemlabel}[2]{[#1,#2]}
+\DeclareOption{draft}{%
+%\renewcommand*{\prob@showdraftlabel}[2]{\draftproblemlabel{#1}{#2}}
+}
+\DeclareOption{final}{%
+\renewcommand*{\prob@showdraftlabel}[2]{}}
+\ProcessOptions
+\define@boolkey{probsoln}[@prob@]{fragile}[true]{}
+\newcommand*{\ProbSolnFragileExt}{vrb}
+\newcommand*{\ProbSolnFragileFile}{\jobname}
+\newwrite\probsoln@write
+\newcount\probsoln@startyear
+\newcommand*{\SetStartYear}[1]{%
+   \probsoln@startyear=#1\relax
+   \renewcommand\SetStartMonth[1]{%
+      \PackageError{probsoln}{\string\SetStartMonth\space
+        can't be used after \string\SetStartYear}{}}%
+}
+\newcommand*{\GetStartYear}{\probsoln@startyear}
+\newcount\probsoln@startmonth
+\newcommand*{\SetStartMonth}[1]{%
+  \probsoln@startmonth=#1\relax
+  \probsoln@startyear=\year\relax
+  \ifnum\month<\probsoln@startmonth
+    \advance\probsoln@startyear by -1\relax
+  \fi
+}
+\SetStartMonth{9}
+\newwrite\probsoln@prev
+\newwrite\probsoln@used
+\newcount\probsoln@prev@cutoff
+\newcommand*{\@probsoln@usedfilename}{\jobname.prb}
+\newcommand*{\SetUsedFileName}[1]{%
+  \renewcommand*{\@probsoln@usedfilename}{#1}%
+}
+\newcommand*{\ClearUsedFile}[1]{%
+  \probsoln@prev@cutoff=0\relax
+  \@probsoln@readprev{#1}%
+  \@for\@this@db:=\prob@databases\do{%
+    {%
+      \edef\@prev@list{\csname probsoln@prev@list@\@this@db\endcsname}%
+      \ifdefempty{\@prev@list}%
+      {}%
+      {%
+        \@for\@this@label:=\@prev@list\do{%
+          \ifcsundef{@used@problem@\@this@db @\@this@label}%
+          {%
+            \immediate\write\probsoln@prev{%
+              \string\previousproblem{\@this@label}{\@this@db}%
+               {\csname @prev@problem@\@this@db @\@this@label\endcsname}}%
+          }%
+          {}%
+        }%
+      }%
+    }%
+  }%
+  \immediate\closeout\probsoln@prev
+  \immediate\closeout\probsoln@used
+  \@disable@exclude@prev
+}
+\newcommand*{\ExcludePreviousFile}[2][3]{%
+  \probsoln@prev@cutoff=\probsoln@startyear\relax
+  \advance\probsoln@prev@cutoff by -#1\relax
+  \@probsoln@readprev{#2}%
+  \@write@prev
+  \def\ExcludePreviousFile[2][3]{\PackageError{probsoln}{Only one
+    instance of \string\ExcludePreviousFile\space allowed}{You've
+    already used this command. You are only allowed to use it once}}%
+  \def\ClearUsedFile[1]{%
+     \PackageError{probsoln}%
+       {\string\ClearUsedFile\space may not be used after
+          \string\ExcludePreviousFile}{}}%
+}
+\newcommand*{\@probsoln@readprev}[1]{%
+  \@enable@exclude@prev
+  \InputIfFileExists{#1}%
+     {\PackageInfo{probsoln}%
+        {Excluded problem file `#1' found}}%
+     {\PackageInfo{probsoln}%
+        {Excluded problem file `#1' not found. A new one will be
+            created}}%
+  \InputIfFileExists{\@probsoln@usedfilename}%
+     {\PackageInfo{probsoln}%
+        {Current problems file `\@probsoln@usedfilename' found}}%
+     {\PackageInfo{probsoln}%
+        {No current problem file `\@probsoln@usedfilename' found. A new one will be created}}%
+  \immediate\openout\probsoln@prev=#1
+  \immediate\openout\probsoln@used=\@probsoln@usedfilename
+}
+%%%%%%
+\newcommand*{\probsoln@prev@list@default}{}
+\newcommand*{\@write@prev}{%
+  \@for\@this@db:=\prob@databases\do{%
+    {%
+      \edef\@prev@list{\csname probsoln@prev@list@\@this@db\endcsname}%
+      \ifdefempty{\@prev@list}%
+      {}%
+      {%
+        \@for\@this@label:=\@prev@list\do{%
+          \immediate\write\probsoln@prev{%
+            \string\previousproblem{\@this@label}{\@this@db}%
+             {\csname @prev@problem@\@this@db @\@this@label\endcsname}}%
+        }%
+      }%
+    }%
+  }%
+}
+\newcommand*{\@enable@exclude@prev}{%
+  \renewcommand*{\@add@used@problem}[2]{%
+    \immediate\write\probsoln@used{\string\usedproblem{##1}{##2}{\number\probsoln@startyear}}%
+    \ifcsundef{@prev@problem@##2@##1}%
+    {%
+      \immediate\write\probsoln@prev{%
+          \string\previousproblem{##1}{##2}{\number\probsoln@startyear}}%
+      \expandafter\xdef\csname @prev@problem@##2@##1\endcsname{%
+          \number\probsoln@startyear}%
+    }%
+    {%
+      \expandafter\ifnum\csname @prev@problem@##2@##1\endcsname
+         <\probsoln@startyear
+      \immediate\write\probsoln@prev{%
+          \string\previousproblem{##1}{##2}{\number\probsoln@startyear}}%
+      \expandafter\xdef\csname @prev@problem@##2@##1\endcsname{%
+          \number\probsoln@startyear}%
+      \fi
+    }%
+  }%
+  \renewcommand*{\@fetch@excluded@list}[2]{%
+    \def##1{}%
+    \ifcsdef{probsoln@prev@list@##2}%
+    {%
+      \edef\@prev@list{\csname probsoln@prev@list@##2\endcsname}%
+      \@for\@this@label:=\@prev@list\do{%
+       \ifcsundef{@used@problem@##2@\@this@label}%
+       {%
+          \ifcsempty{##1}%
+          {\edef##1{\@this@label}}%
+          {\edef##1{##1,\@this@label}}%
+       }%
+       {}%
+      }%
+    }%
+    {}%
+  }%
+  \renewcommand*{\@add@newprevlist}[1]{%
+     \expandafter\gdef\csname probsoln@prev@list@##1\endcsname{}%
+  }%
+  \renewcommand*{\close@probsoln@prev}{%
+    \closeout\probsoln@prev
+    \closeout\probsoln@used
+  }%
+}
+\newcommand*{\@disable@exclude@prev}{%
+  \renewcommand*{\@add@used@problem}[2]{}%
+  \renewcommand*{\@fetch@excluded@list}[2]{\def##1{}}%
+  \renewcommand*{\@add@newprevlist}[1]{}%
+  \renewcommand*{\close@probsoln@prev}{}%
+}
+\newcommand*{\@add@used@problem}[2]{}
+\newcommand*{\@fetch@excluded@list}[2]{%
+  \def#1{}%
+}
+\newcommand*{\@add@newprevlist}[1]{}
+\newcommand*{\close@probsoln@prev}{}
+\AtEndDocument{\close@probsoln@prev}
+\newcommand*{\previousproblem}[3]{%
+  \ifnum#3>\probsoln@prev@cutoff
+    \ifcsundef{prob@db@#2}{\prob@newdb{#2}}{}%
+    \expandafter\gdef\csname @prev@problem@#2@#1\endcsname{#3}%
+    \edef\@prev@list{\csname probsoln@prev@list@#2\endcsname}%
+    \ifdefempty{\@prev@list}%
+    {%
+       \expandafter\xdef\csname probsoln@prev@list@#2\endcsname{#1}%
+    }%
+    {%
+       \expandafter\xdef\csname probsoln@prev@list@#2\endcsname{%
+         \@prev@list,#1}%
+    }%
+  \fi
+}
+\newcommand*{\usedproblem}[3]{%
+  \ifnum#3=\probsoln@startyear
+    \expandafter\def\csname @used@problem@#2@#1\endcsname{#3}%
+  \fi
+}
+
+\newcommand*{\prob@db@default}{}
+\newcommand*{\prob@databases}{default}
+\newcommand*{\prob@db@default@solutions}{}
+\newcommand*{\prob@newdb}[1]{%
+  \ifcsundef{prob@db@#1}%
+  {%
+    \expandafter\gdef\csname prob@db@#1\endcsname{}%
+    \xdef\prob@databases{\prob@databases,#1}%
+    \expandafter\gdef\csname prob@db@#1@solutions\endcsname{}%
+    \@add@newprevlist{#1}%
+  }%
+  {%
+    \PackageError{probsoln}{Data set `#1' is already defined}%
+      {Data set names must be unique}%
+  }%
+}
+\newcommand*{\prob@currentdb}{default}
+\newcommand{\moveproblem}[3]{%
+\@moveproblem{#1}{#2}{#3}%
+\expandafter\let\expandafter\@tmpdblist
+ \csname prob@db@#2\endcsname
+\expandafter\gdef\csname prob@db@#2\endcsname{}%
+\@for\@tmplab:=\@tmpdblist\do{%
+ \ifthenelse{\equal{\@tmplab}{#1}}{}{%
+   \expandafter\ifx\csname prob@db@#2\endcsname\@empty
+     \expandafter\xdef\csname prob@db@#2\endcsname{\@tmplab}%
+   \else
+     \expandafter\xdef\csname prob@db@#2\endcsname{%
+       \csname prob@db@#2\endcsname,%
+       \@tmplab}%
+   \fi
+ }%
+}%
+}
+\newcommand*{\@moveproblem}[3]{%
+  \ifcsempty{prob@db@#3}%
+  {%
+    \expandafter\xdef\csname prob@db@#3\endcsname{#1}%
+  }%
+  {%
+    \expandafter\xdef\csname prob@db@#3\endcsname{%
+      \csname prob@db@#3\endcsname,#1}%
+  }%
+  \edef\do@movedata{%
+    \noexpand\global\noexpand\let\expandafter\noexpand
+      \csname prob@data@#3@#1\endcsname=%
+      \expandafter\noexpand\csname prob@data@#2@#1\endcsname
+      \noexpand\global\noexpand\let
+      \expandafter\noexpand
+      \csname prob@data@#2@#1\endcsname=\noexpand\undefined
+    }%
+  \do@movedata
+  \edef\do@moveargN{%
+    \noexpand\global\noexpand\let\expandafter\noexpand
+      \csname prob@argN@#3@#1\endcsname=%
+      \expandafter\noexpand\csname prob@argN@#2@#1\endcsname
+      \noexpand\global\noexpand\let
+      \expandafter\noexpand
+      \csname prob@argN@#2@#1\endcsname=\noexpand\undefined
+    }%
+  \do@moveargN
+  \@ifundefined{prob@args@#2@#1}{}{%
+    \edef\do@moveargs{%
+      \noexpand\global\noexpand\let\expandafter\noexpand
+        \csname prob@args@#3@#1\endcsname=%
+        \expandafter\noexpand\csname prob@args@#2@#1\endcsname
+        \noexpand\global\noexpand\let
+        \expandafter\noexpand
+        \csname prob@args@#2@#1\endcsname=\noexpand\undefined
+      }%
+    \do@moveargs
+  }%
+}
+\newcommand{\prob@newproblem}[5]{%
+  \@ifundefined{prob@db@#2}{\prob@newdb{#2}}{}%
+  \@ifundefined{prob@data@#2@#3}%
+  {%
+    \let\@tmp=\undefined
+    \newcommand\@tmp[#1]{#4}%
+    \expandafter\global\expandafter\let
+       \csname prob@data@#2@#3\endcsname=\@tmp
+    \expandafter\xdef\csname prob@argN@#2@#3\endcsname{\number#1}%
+    \let\@tmp=\undefined
+    \expandafter\ifx\csname prob@db@#2\endcsname\@empty
+      \expandafter\xdef\csname prob@db@#2\endcsname{#3}%
+    \else
+      \expandafter\xdef\csname prob@db@#2\endcsname{%
+        \csname prob@db@#2\endcsname,#3}%
+    \fi
+    \ifx\@empty#5\@empty
+    \else
+       \edef\thisprob@currentdb{#2}%
+       \edef\thisprob@currentlabel{#3}%
+       \expandafter\@setdefaultprobargs\expandafter{#5}%
+    \fi
+  }%
+  {%
+    \PackageError{probsoln}{Problem `#3' is already defined for
+    data base `#2'}{Problem labels must be unique for each data base}%
+  }%
+}
+
+\newcommand{\@prob@gobblethree}[3]{}
+\newcommand{\@prob@getargs}[3]{%
+\message{Problem `#3' (in data base `#2') requires #1 argument(s).^^J
+Please specify (e.g. \csname @prob@getargs@eg@\romannumeral#1\endcsname):}%
+\read-1to\@tmp
+\expandafter\global\expandafter\let
+  \csname prob@args@#2@#3\endcsname=\@tmp
+}
+\def\@prob@getargs@eg@i{{12}}
+\def\@prob@getargs@eg@ii{{5}{3}}
+\def\@prob@getargs@eg@iii{{4}{5}{2}}
+\def\@prob@getargs@eg@iv{{5}{3}{10}{8}}
+\def\@prob@getargs@eg@v{{5}{3}{10}{8}{4}}
+\def\@prob@getargs@eg@vi{{5}{3}{10}{8}{4}{24}}
+\def\@prob@getargs@eg@vii{{5}{3}{10}{8}{4}{24}{32}}
+\def\@prob@getargs@eg@viii{{5}{3}{10}{8}{4}{24}{32}{9}}
+\def\@prob@getargs@eg@ix{{5}{3}{10}{8}{4}{24}{32}{9}{2}}
+\let\@prob@do@getargs\@prob@gobblethree
+\newcommand*{\setprobargs}[3][default]{%
+  \expandafter\gdef\csname prob@args@#1@#2\endcsname{#3}%
+}
+\newcommand*{\@setdefaultprobargs}[1]{%
+  \ifusedefaultprobargs
+    \setprobargs[\thisprob@currentdb]{\thisprob@currentlabel}{#1}%
+  \fi
+}
+\long\def\long@collect@body#1{%
+  \@envbody{\@xp#1\@xp{\the\@envbody}}%
+  \edef\process@envbody{\the\@envbody\@nx\end{\@currenvir}}%
+  \@envbody\@emptytoks \def\begin@stack{b}%
+  \begingroup
+  \if@prob@fragile
+    \obeylines\obeyspaces
+    \@makeother\#
+    \@makeother\%
+  \fi
+  \@xp\let\csname\@currenvir\endcsname\long@collect@@body
+  \edef\process@envbody{\@xp\@nx\csname\@currenvir\endcsname}%
+  \process@envbody
+}
+\long\def\long@addto@envbody#1{%
+  \toks@{#1}%
+  \edef\@psn@tmp{\the\@envbody\the\toks@}%
+  \global\@envbody\@xp{\@psn@tmp}%
+}
+\long\def\long@collect@@body#1\end#2{%
+  \protected@edef\begin@stack{%
+    \long@push@begins#1\begin\end \@xp\@gobble\begin@stack
+  }%
+  \ifx\@empty\begin@stack
+    \endgroup
+    \@checkend{#2}%
+    \long@addto@envbody{#1}%
+  \else
+    \long@addto@envbody{#1\end{#2}}%
+  \fi
+  \process@envbody
+}
+\long\def\long@push@begins#1\begin#2{%
+  \ifx\end#2\else b\@xp\long@push@begins\fi
+}
+{\obeylines
+ \gdef\@char@M{^^M}%
+}
+\@onelevel@sanitize\@char@M
+\def\@beg@env@string{\begin}
+\@onelevel@sanitize\@beg@env@string
+\def\@end@env@string{\end}
+\@onelevel@sanitize\@end@env@string
+\edef\def@replace@markers{%
+ \noexpand\def\noexpand\do@replace@charM##1\@char@M##2\noexpand\end@replace@marker{%
+    \noexpand\expandafter\noexpand\toks@\noexpand\expandafter{\noexpand\replace@text}%
+    \noexpand\ifx\noexpand\relax##2\noexpand\relax
+      \noexpand\edef\noexpand\replace@text{\noexpand\the\noexpand\toks@##1}%
+      \noexpand\let\noexpand\do@replacenext\noexpand\replace@mark@noop
+    \noexpand\else
+      \noexpand\edef\noexpand\replace@text{\noexpand\the\noexpand\toks@##1^^J}%
+      \noexpand\let\noexpand\do@replacenext\noexpand\do@replace@charM
+    \noexpand\fi
+    \noexpand\do@replacenext##2\noexpand\end@replace@marker
+  }%
+ \noexpand\def\noexpand\doreplace@begverb##1\@beg@env@string##2\noexpand\end@replace@marker{%
+    \noexpand\expandafter\noexpand\toks@\noexpand\expandafter{\noexpand\replace@text}%
+    \noexpand\ifx\noexpand\relax##2\noexpand\relax
+      \noexpand\edef\noexpand\replace@text{\noexpand\the\noexpand\toks@##1}%
+      \noexpand\let\noexpand\do@replacenext\noexpand\replace@mark@noop
+    \noexpand\else
+      \noexpand\edef\noexpand\replace@text{\noexpand\the\noexpand\toks@
+        ##1\expandafter\@gobble\string\\begin}%
+      \noexpand\let\noexpand\do@replacenext\noexpand\doreplace@begverb
+    \noexpand\fi
+    \noexpand\do@replacenext##2\noexpand\end@replace@marker
+  }%
+ \noexpand\def\noexpand\doreplace@endverb##1\@end@env@string##2\noexpand\end@replace@marker{%
+    \noexpand\expandafter\noexpand\toks@\noexpand\expandafter{\noexpand\replace@text}%
+    \noexpand\ifx\noexpand\relax##2\noexpand\relax
+      \noexpand\edef\noexpand\replace@text{\noexpand\the\noexpand\toks@##1}%
+      \noexpand\let\noexpand\do@replacenext\noexpand\replace@mark@noop
+    \noexpand\else
+      \noexpand\edef\noexpand\replace@text{\noexpand\the\noexpand\toks@
+        ##1\expandafter\@gobble\string\\end}%
+      \noexpand\let\noexpand\do@replacenext\noexpand\doreplace@endverb
+    \noexpand\fi
+    \noexpand\do@replacenext##2\noexpand\end@replace@marker
+  }%
+  \noexpand\def\noexpand\replace@markers##1{%
+    \noexpand\def\noexpand\replace@text{}%
+    \noexpand\expandafter\noexpand\do@replace@charM##1\@char@M\relax\noexpand\end@replace@marker
+    \noexpand\let##1\noexpand\replace@text
+    \noexpand\def\noexpand\replace@text{}%
+    \noexpand\expandafter\noexpand\doreplace@begverb##1\@beg@env@string\relax\noexpand\end@replace@marker
+    \noexpand\let##1\noexpand\replace@text
+    \noexpand\def\noexpand\replace@text{}%
+    \noexpand\expandafter\noexpand\doreplace@endverb##1\@end@env@string\relax\noexpand\end@replace@marker
+    \noexpand\let##1\noexpand\replace@text
+  }
+}
+\def\replace@mark@noop#1\end@replace@marker{}
+\def@replace@markers
+\newenvironment{defproblem}[1][0]{%
+  \edef\@prob@currentargN{\number0#1}%
+  \@defproblem@beginenv
+}{}
+\newcommand*{\@defproblem@beginenv}[2][]{%
+  \def\@prob@currentdefaultargs{#1}%
+  \def\@prob@currentlabel{#2}%
+  \@defproblem@beginenv@
+}
+\newcommand*{\@defproblem@beginenv@}[1][]{%
+  \setkeys{probsoln}{#1}%
+  \long@collect@body\prob@do@defproblem
+}
+\newcommand{\prob@do@newproblem}[1]{%
+  \if@prob@fragile
+    \probsoln@process@fragile{#1}%
+    \protected@edef\do@def@new@problem{%
+      \noexpand\prob@newproblem
+        {\@prob@currentargN}%
+        {\prob@currentdb}%
+        {\@prob@currentlabel}%
+        {%
+          \noexpand\probsoln@write@tmp{\@prob@tmp@problem}%
+          \noexpand\probsoln@read@tmp
+        }%
+        {\@prob@currentdefaultargs}%
+    }%
+  \else
+    \toks@{#1}%
+    \protected@edef\do@def@new@problem{%
+      \noexpand\prob@newproblem
+      {\@prob@currentargN}%
+      {\prob@currentdb}%
+      {\@prob@currentlabel}%
+      {\the\toks@}%
+      {\@prob@currentdefaultargs}%
+    }%
+  \fi
+  \do@def@new@problem
+}
+\let\prob@do@defproblem=\prob@do@newproblem
+\newenvironment{onlysolution}[1][]{%
+   \setkeys{probsoln}{#1}%
+   \long@collect@body\do@onlysolution
+}{}
+\newcommand{\do@onlysolution}[1]{%
+  \ifshowanswers
+    \probsoln@do@body{#1}%
+  \fi
+  \@ifundefined{@prob@currentlabel}
+  {}%
+  {%
+    \expandafter
+     \psn@add@unique@label
+       \csname prob@db@\prob@currentdb @solutions\endcsname{%
+         \@prob@currentlabel
+       }%
+  }%
+}
+
+\newcommand*{\psn@add@unique@label}[2]{%
+  \ifx#1\@empty
+    \xdef#1{#2}%
+  \else
+    \edef\@tmp@label{#2}%
+    \expandafter\DTLifinlist\expandafter{\@tmp@label}{#1}%
+    {}% ignore
+    {\xdef#1{#1,\@tmp@label}}%
+  \fi
+}
+\providecommand{\DTLifinlist}[4]{%
+  \def\@dtl@doifinlist##1,#1,##2\end@dtl@doifinlist{%
+     \def\@before{##1}%
+     \def\@after{##2}%
+  }%
+  \expandafter\@dtl@doifinlist\expandafter,#2,#1,\@nil
+    \end@dtl@doifinlist
+  \ifx\@after\@nnil
+    #4%
+  \else
+    #3%
+  \fi
+}
+\newenvironment{onlyproblem}[1][]{%
+   \setkeys{probsoln}{#1}%
+   \long@collect@body\do@onlyproblem
+}{}
+\newcommand{\do@onlyproblem}[1]{%
+  \ifshowanswers
+  \else
+    \probsoln@do@body{#1}%
+  \fi
+}
+\newcommand{\probsoln@do@body}[1]{%
+  \if@prob@fragile
+    \probsoln@process@fragile{#1}%
+    \probsoln@write@tmp{\@prob@tmp@problem}%
+    \probsoln@read@tmp
+  \else
+    #1%
+  \fi
+}
+\newcommand{\probsoln@process@fragile}[1]{%
+  \def\@prob@tmp@problem{#1}%
+  \@onelevel@sanitize\@prob@tmp@problem
+  \replace@markers\@prob@tmp@problem
+}
+\newcommand{\probsoln@write@tmp}[1]{%
+  \immediate\openout\probsoln@write=\ProbSolnFragileFile.\ProbSolnFragileExt
+  \immediate\write\probsoln@write{#1}%
+  \immediate\closeout\probsoln@write
+}
+\newcommand{\probsoln@read@tmp}{%
+  \input{\ProbSolnFragileFile.\ProbSolnFragileExt}%
+}
+\newcommand{\useproblem}[2][default]{%
+  \def\@prob@currentlabel{#2}%
+  \def\prob@currentdb{#1}%
+  \prob@showdraftlabel{#1}{#2}%
+  \@add@used@problem{#2}{#1}%
+  \let\@useprob@next=\relax
+  \@ifundefined{prob@data@#1@#2}%
+  {%
+    \PackageError{probsoln}%
+      {Problem `#2' is not defined in data set `#1'}{}%
+  }%
+  {%
+    \def\@useprob@next{\csname prob@data@#1@#2\endcsname}%
+  }%
+  \@useprob@next
+}
+\newcommand*{\loadallproblems}[2][default]{%
+\bgroup
+ \let\par\relax
+ \edef\prob@currentdb{#1}%
+ \input{#2}%
+\egroup
+}
+\newcommand{\prob@do@selectedproblem}[1]{%
+  \expandafter\DTLifinlist\expandafter{\@prob@currentlabel}{\prob@selectedlabels}%
+  {%
+    \prob@do@newproblem{#1}%
+  }%
+  {}%
+}
+\newcommand{\loadselectedproblems}[3][default]{%
+\bgroup
+ \let\par\relax
+ \edef\prob@currentdb{#1}%
+ \edef\prob@selectedlabels{#2}%
+ \let\prob@do@defproblem=\prob@do@selectedproblem
+ \input{#3}%
+\egroup
+}
+\newcommand{\prob@do@exceptedproblem}[1]{%
+  \expandafter\DTLifinlist\expandafter{\@prob@currentlabel}{\prob@selectedlabels}%
+  {}%
+  {%
+    \prob@do@newproblem{#1}%
+  }%
+}
+\newcommand{\loadexceptproblems}[3][default]{%
+\bgroup
+ \let\par\relax
+ \edef\prob@currentdb{#1}%
+ \edef\prob@selectedlabels{#2}%
+ \let\prob@do@defproblem=\prob@do@exceptedproblem
+ \input{#3}%
+\egroup
+}
+\newcommand{\prob@add@currentlabel}[1]{%
+\ifx\prob@selectedlabels\@empty
+ \xdef\prob@selectedlabels{\@prob@currentlabel}%
+\else
+ \xdef\prob@selectedlabels{\prob@selectedlabels,\@prob@currentlabel}%
+\fi
+}
+\newif\iffirstpass
+\firstpasstrue
+\newcommand{\loadrandomproblems}[3][default]{%
+  \@fetch@excluded@list{\@excl@list}{#1}%
+  \@loadrandomproblems{#1}{#2}{#3}{\@excl@list}%
+}
+\newcommand{\loadrandomexcept}[4][default]{%
+  \@loadrandomproblems{#1}{#2}{#3}{#4}%
+}
+\newcommand{\@loadrandomproblems}[4]{%
+\bgroup
+ \let\par\relax
+ \def\prob@db@reserved{}%
+ \def\prob@currentdb{reserved}%
+ \edef\prob@selectedlabels{}%
+ \let\prob@do@defproblem=\prob@add@currentlabel
+ \firstpasstrue
+ \input{#3}%
+ \@probselN=0\relax
+ \@for\@thislabel:=\prob@selectedlabels\do{%
+   \edef\@if@in@list{\noexpand\DTLifinlist{\@thislabel}{#4}}%
+   \@if@in@list
+   {}%
+   {%
+     \advance\@probselN by 1\relax
+     \expandafter
+       \edef\csname @prob@tmp@\romannumeral\@probselN\endcsname{%
+         \@thislabel}%
+   }%
+ }%
+ \edef\@do@excludedlist{#4}%
+ \ifdefempty{\@do@excludedlist}%
+   {}%
+   {\def\@do@excludedlist{(Excluded list: #4.) }}%
+ \ifnum\@probselN=0\relax
+     \PackageWarning{probsoln}{You have requested
+       \number#2\space\space problem(s) but there are no available
+       problems in `#3'. \@do@excludedlist No problems will be selected}%
+ \else
+   \shuffle{@prob@tmp@}{\@probselN}%
+   \ifnum\@probselN<#2\relax
+     \ifnum\@probselN=1\relax
+       \PackageWarning{probsoln}{You have requested
+         \number#2\space\space problem(s) but there is only
+         1 problem available in `#3'. \@do@excludedlist
+         Only 1 problem will be selected}%
+     \else
+       \PackageWarning{probsoln}{You have requested
+         \number#2\space\space problem(s) but there are only
+         \number\@probselN\space problems available in `#3'.
+           \@do@excludedlist
+           Only \number\@probselN\space problems will be selected}%
+     \fi
+   \else
+     \@probselN=#2\relax
+   \fi
+ \fi
+ \@probN=0\relax
+ \def\prob@selectedlabels{}%
+ \whiledo{\@probN<\@probselN}{%
+   \advance\@probN by 1\relax
+   \ifx\prob@selectedlabels\@empty
+     \edef\prob@selectedlabels{%
+       \csname @prob@tmp@\romannumeral\@probN\endcsname}%
+   \else
+     \edef\prob@selectedlabels{%
+       \prob@selectedlabels,%
+       \csname @prob@tmp@\romannumeral\@probN\endcsname}%
+   \fi
+ }%
+ \let\prob@do@defproblem=\prob@do@selectedproblem
+ \firstpassfalse
+ \input{#3}%
+\@ifundefined{prob@db@#1}{\prob@newdb{#1}}{}%
+\@for\@thislabel:=\prob@selectedlabels\do{%
+  \@moveproblem{\@thislabel}{reserved}{#1}%
+}%
+ \let\prob@selectedlabels=\undefined
+\egroup
+}
+\def\@sodong{1}
+\newlength\sleft
+\newcommand{\@ngatcau}{%
+\setlength{\sleft}{\dimexpr\pagegoal-\pagetotal-2\baselineskip\relax}
+\ifdim\sleft<0pt%
+\setlength{\sleft}{\dimexpr-\sleft}
+\fi%
+\ifdim\sleft<\@sodong\baselineskip
+\newpage
+%\pagebreak%
+\fi
+}
+\newcommand{\ngatcau}[1]{\renewcommand{\@sodong}{#1}}
+
+\newcommand{\@dongkhung}[1]{\par\parbox{\linewidth}{#1}}
+\newcommand{\mohinh}{\renewcommand{\@dongkhung}[1]{##1}}
+\newcommand{\donghinh}{\renewcommand{\@dongkhung}[1]{\par\parbox{\linewidth}{##1}}}
+% \par\noindent\parbox{\linewidth}{#2}
+\newcommand{\foreachproblem}[2][default]{%
+\@ifundefined{prob@db@#1}{%
+  \PackageError{probsoln}{Data base `#1' is not defined}{}%
+}{%
+  \expandafter\let\expandafter\@tmp\csname prob@db@#1\endcsname
+  \@for\thisproblemlabel:=\@tmp\do{%
+    \expandafter\ifnum
+       \csname prob@argN@#1@\thisproblemlabel\endcsname>0\relax
+       \@ifundefined{prob@args@#1@\thisproblemlabel}{%
+         \expandafter\@prob@getargs
+           \csname prob@argN@#1@\thisproblemlabel\endcsname
+           {#1}{\thisproblemlabel}}{}%
+       \expandafter\let\expandafter\thisproblemargs
+         \csname prob@args@#1@\thisproblemlabel\endcsname
+    \else
+       \let\thisproblemargs\@empty
+    \fi
+    \expandafter\toks@\expandafter{\thisproblemargs}%
+    \edef\thisproblem{\noexpand\useproblem[#1]{\thisproblemlabel}%
+       \the\toks@}%
+\ifkhungbeamer
+#2
+\else
+\IfSubStr{\thisproblemlabel}{*}{
+\ifshowproblems%
+\@dongkhung{#2}
+\else
+#2
+\fi
+}{#2}
+\fi
+  }%
+}%
+}
+\newcommand{\foreachsolution}[2][default]{%
+\@ifundefined{prob@db@#1}{%
+  \PackageError{probsoln}{Data base `#1' is not defined}{}%
+}{%
+  \expandafter\let\expandafter\@tmp\csname prob@db@#1@solutions\endcsname
+  \@for\thisproblemlabel:=\@tmp\do{%
+    \ifx\thisproblemlabel\@empty
+    \else
+      \expandafter\ifnum
+         \csname prob@argN@#1@\thisproblemlabel\endcsname>0\relax
+         \@ifundefined{prob@args@#1@\thisproblemlabel}{%
+           \expandafter\@prob@getargs
+             \csname prob@argN@#1@\thisproblemlabel\endcsname
+             {#1}{\thisproblemlabel}}{}%
+         \expandafter\let\expandafter\thisproblemargs
+           \csname prob@args@#1@\thisproblemlabel\endcsname
+      \else
+         \let\thisproblemargs\@empty
+      \fi
+      \expandafter\toks@\expandafter{\thisproblemargs}%
+      \edef\thisproblem{\noexpand\useproblem[#1]{\thisproblemlabel}%
+         \the\toks@}%
+      #2%
+    \fi
+  }%
+}%
+}
+
+\newcommand{\foreachdataset}[2]{%
+\@for#1:=\prob@databases\do{#2}}
+\newcount\@probN \newcount\@probselN \newcount\@rndselctr
+\newcount\r@ndcur
+\newcount\@ps@randtmp
+\r@ndcur=1\relax
+\newcommand*{\PSNrandseed}[1]{%
+  \ifnum#1=0\relax
+    \PackageWarning{probsoln}{Can't have 0 as random seed, changing to 1}%
+    \global\r@ndcur=1\relax
+  \else
+    \global\r@ndcur=#1\relax
+  \fi
+  \PackageInfo{probsoln}{Random Seed = \number\r@ndcur}%
+}
+\newcommand*{\PSNgetrandseed}[1]{#1=\r@ndcur\relax}
+\newcommand*{\PSNrand}{%
+  \@ps@randtmp=\r@ndcur
+  \multiply\@ps@randtmp by 16811\relax
+  \r@ndcur=\@ps@randtmp
+  \global\divide\r@ndcur by 39989\relax
+  \global\multiply\r@ndcur by 39989\relax
+  \advance\@ps@randtmp by -\r@ndcur
+  \global\r@ndcur = \@ps@randtmp
+  \ifnum\r@ndcur=0\relax
+    \global\r@ndcur=1\relax
+  \fi
+}
+\newcommand*{\PSN@old@rand}{%
+  \@ps@randtmp=\r@ndcur
+  \multiply\@ps@randtmp by 16807\relax
+  \r@ndcur=\@ps@randtmp
+  \global\divide\r@ndcur by 120001\relax
+  \global\multiply\r@ndcur by 120001\relax
+  \advance\@ps@randtmp by -\r@ndcur
+  \global\r@ndcur = \@ps@randtmp
+  \ifnum\r@ndcur=0\relax
+    \global\r@ndcur=1\relax
+  \fi
+}
+\newcommand*{\PSNuseoldrandom}{%
+  \let\PSNrand\PSN@old@rand
+}
+\newcommand{\PSNrandom}[2]{%
+  \PSNrand
+  #1=\r@ndcur
+  \@ps@randtmp=\r@ndcur
+  \divide\@ps@randtmp by #2\relax
+  \multiply\@ps@randtmp by #2\relax
+  \advance#1 by -\@ps@randtmp
+  \advance#1 by 1\relax
+}
+\newcommand{\random}[3]{%
+\ifnum#2=1\relax
+  \PSNrandom{\value{#1}}{#3}%
+\else
+  \@rndselctr=#3%
+  \advance\@rndselctr by -#2\relax
+  \advance\@rndselctr by 1\relax
+  \PSNrandom{\value{#1}}{\@rndselctr}%
+  \addtocounter{#1}{#2}%
+  \addtocounter{#1}{-1}%
+\fi
+}
+\newcount\@shfctr \newcount\@shfA \newcount\@shfB
+\newcommand{\shuffle}[2]{%
+  \@shfctr=1\relax
+  \whiledo{\@shfctr < 101}%
+  {%
+    \PSNrandom{\@shfA}{#2}\PSNrandom{\@shfB}{#2}%
+    \ifnum\@shfA=\@shfB
+    \else
+      \edef\@@tmpA{\csname#1\romannumeral\@shfA\endcsname}%
+      \let\@tmpA=\@@tmpA
+      \edef\@@tmpB{\csname#1\romannumeral\@shfB\endcsname}%
+      \let\@tmpB=\@@tmpB
+      \expandafter\xdef\csname#1\romannumeral\@shfA\endcsname{\@tmpB}%
+      \expandafter\xdef\csname#1\romannumeral\@shfB\endcsname{\@tmpA}%
+    \fi
+    \advance\@shfctr by 1\relax
+  }%
+}
+\newcount\@ps@forrand
+\newcount\@ps@forrand@level
+\newcommand{\daopa}[2]{\PSNrandom{#1}{#2}}
+\newcommand{\doforrandN}[4]{%
+  \global\advance\@ps@forrand@level by 1\relax
+  {%
+    \@ps@forrand=0\relax
+    \@for#2:=#3\do{%
+      \advance\@ps@forrand by 1\relax
+      \expandafter
+        \edef\csname @doforrandN@\number\@ps@forrand@level @\romannumeral\@ps@forrand\endcsname{#2}%
+    }%
+    \ifnum\@ps@forrand<#1\relax
+      \PackageError{probsoln}{Can't randomly select \number#1\space item(s)}{You
+      have requested \number#1\space item(s), but there
+      are only \number\@ps@forrand\space item(s) in the list: #3}%
+    \else
+      \shuffle{@doforrandN@\number\@ps@forrand@level @}{\@ps@forrand}%
+      \ifnum#1>0\relax
+        \@ps@forrand=0\relax
+        \loop
+          \advance\@ps@forrand by 1\relax
+          \edef#2{\csname @doforrandN@\number\@ps@forrand@level @\romannumeral\@ps@forrand\endcsname}%
+           #4%
+        \ifnum\@ps@forrand<#1\relax
+        \repeat
+      \fi
+    \fi
+  }%
+  \global\advance\@ps@forrand@level by -1\relax
+}
+%%%%%%%%%%%%%%%%
+% \ifthenelse{\boolean{baithi}}
+% {%\input{baithi.tex}
+% \RequirePackage{dethi-baithi} 
+
+%\RequirePackage{baithi}
+%}{  %%}
+%%%%%%%%%%%%%%%%baitap.tex
+\ifthenelse{\boolean{baitap}}
+{
+\newif\ifshowproblems
+\showproblemstrue
+\let\showproblems\showproblemstrue
+\let\hideproblems\showproblemsfalse
+\def\@dpcm{$\square$}
+\newcommand{\dpcm}[1]{\renewcommand{\@dpcm}{#1}}
+\def\nodpcm{\dpcm{}}
+
+%%%%%%%%%%%%%%%%%%%%
+\newcommand*{\baitapmoi}{\@ifstar\@snewproblem\@newproblem}
+\newcommand*{\baidungsai}{\@ifstar\@snewproblem\@newproblem}
+\newcommand*{\baidienvao}{\@ifstar\@snewproblem\@newproblem}
+% \newcommand*{\newproblem}{\@ifstar\@snewproblem\@newproblem}
+\newcommand*{\newproblem}{\@ifstar\@snewproblem\@newproblem}
+
+\newcommand{\@snewproblem}[1][0]{%
+  \def\@newprob@argN{#1}%
+  \@s@newproblem
+}%
+\newcommand{\@s@newproblem}[3][]{%
+  \begin{defproblem}[\@newprob@argN][#1]{#2}%
+    #3%
+  \end{defproblem}%
+}
+
+\newcommand{\@newproblem}[1][0]{%
+  \def\@newprob@argN{#1}%
+  \@ns@newproblem
+}
+
+\newcommand{\@ns@newproblem}[4][]{%
+  \begin{defproblem}[\@newprob@argN][#1]{#2}%
+    #3%
+    \begin{onlysolution}%
+      \begin{solution}%
+        #4%
+      \end{solution}%
+    \end{onlysolution}%
+  \end{defproblem}%
+}
+\newcommand*{\selectallproblems}[1]{{\loadallproblems[#1]{#1}}%
+\foreachproblem[#1]{\PSNitem\thisproblem\endPSNitem}}
+\newcommand*{\selectrandomly}[2]{%
+{\loadrandomproblems[#1]{#2}{#1}}%
+\foreachproblem[#1]{\PSNitem\thisproblem\endPSNitem}%
+}
+\newenvironment{PSNitem}{\item}{}
+\@ifundefined{solution}{%
+  \newenvironment{solution}{\par\noindent\textbf{\solutionname:}\space
+    \ignorespaces}{}%
+}{}
+\newcommand*{\solutionname}{\textbf{ \textcolor{blue}{Lời giải.} }}
+\newenvironment{textenum}{%
+  \ifnum\@enumdepth>\thr@@
+    \@toodeep
+  \else
+    \advance\@enumdepth by 1\relax
+    \edef\@enumctr{enum\romannumeral\the\@enumdepth}%
+    \let\@item\@textitem
+    \def\@itemlabel{%
+      \refstepcounter{\@enumctr}%
+      \csname label\@enumctr\endcsname
+    }%
+    \setcounter{\@enumctr}{0}%
+  \fi
+  \ignorespaces
+}%
+{%
+}
+\def\@textitem[#1]{#1\space\ignorespaces}
+\newcommand*{\correctitemformat}[1]{\fbox{#1}}
+\newcommand*{\incorrectitemformat}[1]{%
+\hspace{\fboxsep}\hspace{\fboxrule}#1}
+\newcommand*{\correctitem}{\@inmatherr\correctitem
+\@ifnextchar[\@correctitem{\@noitemargtrue\@correctitem[\@itemlabel]}}
+\def\@correctitem[#1]{%
+\ifshowanswers
+  \@item[\correctitemformat{#1}]%
+\else
+  \@item[#1]%
+\fi}
+\newcommand*{\incorrectitem}{\@inmatherr\incorrectitem
+\@ifnextchar[\@incorrectitem{\@noitemargtrue\@incorrectitem[\@itemlabel]}}
+\def\@incorrectitem[#1]{%
+\ifshowanswers
+  \@item[\incorrectitemformat{#1}]%
+\else
+  \@item[#1]%
+\fi}
+%%%%%%%%%%%%%%%%%%%%%
+\newcounter{@choice}
+ \newcommand*{\baituluan}{\@ifstar\@snewproblemtl\@newproblemtl}
+ \newcommand*{\baitracnghiem}{\@ifstar\@snewproblemtn\@newproblemtn}
+% \newcommand*{\baitracnghiemh}{\@ifstar\@snewproblemtnh\@newproblemtnh}
+  \newcommand*{\bangtracnghiem}{\@ifstar\@snewproblembang\@newproblembang}
+ \newcommand*{\baigachduoi}{\@ifstar\@snewproblemtn\@newproblemtngd}
+%%%%%%%%%%%%%%%%%%%%%%%
+\newlength\widthfig
+\newlength\widthtemp
+\setlength{\widthfig}{0pt}
+\setlength{\widthtemp}{\linewidth}
+%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\@snewproblemtl}[3][0]{%
+\begin{defproblem}[#1]{#2}%
+{#3}
+\end{defproblem}}
+\newcommand{\@newproblemtl}[4][0]{%
+\begin{defproblem}[#1]{#2}%
+ \ifshowproblems 
+{\ #3} 
+ \fi
+\begin{onlysolution}%
+ \ifshowproblems 
+ \par\medskip
+\fi
+ \solutionname
+#4
+\end{onlysolution}%
+ \par\medskip
+\end{defproblem}}
+%%%%%%%%%%%
+\renewcommand{\solutionname}{\textbf{ \textcolor{blue}{Lời giải.} }}
+\newif\ifduongke \duongketrue
+
+%%%%%%%%%%%%%
+\newcommand{\@newproblemtn}[5][0]{%
+\begin{defproblem}[#1]{#2}% 
+\setlength{\widthfig}{0pt}
+\setlength{\heightfig}{0pt}
+\setcounter{@choice}{0}
+\ifthenelse{\boolean{showproblems}}%
+{
+#3 
+\ifthenelse{\boolean{showanswers}}{}%
+{
+\begin{shortenumerate}
+#4
+\end{shortenumerate}
+\setcounter{@choice}{0}
+}
+}{ }
+\begin{onlysolution}%
+\begin{shortenumerate}
+#4
+\end{shortenumerate}
+\setcounter{@choice}{0}
+ \end{onlysolution}%
+% 
+\ifcholoigiai
+\ifduongke
+\par
+\noindent\dotfill\par
+\fi 
+\motdatrue\choloigiaifalse
+#4%%%
+\setcounter{@choice}{0}
+{#5}  \hfill  \@dpcm
+\par
+\ifduongke
+\noindent\hrulefill\par
+\fi
+\choloigiaitrue
+\motdafalse
+\fi
+\end{defproblem}}
+%%%%--------------------------------%%%%%%%%%%%
+\newcommand{\@snewproblemtn}[4][0]{%
+\begin{defproblem}[#1]{#2}%
+{\ifshowproblems {
+\begin{shortenumerate}
+#3
+\end{shortenumerate}
+\setcounter{@choice}{0}
+#4
+}\else  \fi}
+\begin{onlysolution}%
+{\ifshowproblems 
+ 
+\else
+{\noindent  
+\begin{shortenumerate}
+#3
+\end{shortenumerate}
+\setcounter{@choice}{0}
+#4
+}
+\fi}
+\end{onlysolution}%
+\end{defproblem}}
+%%%%%%%%%%%%%
+% \newcommand{\@newproblemtnh}[5][0]{%
+% \begin{defproblem}[#1]{#2}% 
+%  \setlength{\widthfig}{0pt}
+% \ifthenelse{\boolean{showproblems}}%
+% {
+% #3 
+% \begin{shortenumerate}
+% #4
+% \end{shortenumerate}
+%}
+% }{ 
+% \begin{onlysolution}%
+% \begin{shortenumerate}
+% #4%%
+% \end{shortenumerate}
+% \end{onlysolution}%
+% }
+%  \ifcholoigiai
+% \ifduongke
+% \par
+% \noindent\dotfill\par
+% \fi 
+% \motdatrue\choloigiaifalse
+% #4%%%
+% \ifthenelse{\value{@choice}=4}{\setcounter{@choice}{0}}{}%%
+% {#5}  \hfill$\square$
+% \par
+% \ifduongke
+% \noindent\hrulefill
+% \fi
+% \choloigiaitrue
+% \motdafalse
+% \fi
+% \end{defproblem}}
+%%%%--------------------------------%%%%%%%%%%%
+% \newcommand{\@snewproblemtnh}[4][0]{%
+% \begin{defproblem}[#1]{#2}%
+% {\ifshowproblems {
+% \begin{shortenumerate}
+% #3
+% \end{shortenumerate}
+% #4
+% }\else  \fi}
+% \begin{onlysolution}%
+% {\ifshowproblems 
+%  
+% \else
+% {\noindent  
+% \begin{shortenumerate}
+% #3
+% \end{shortenumerate}
+% #4
+% }
+% \fi}
+% \end{onlysolution}%
+% \end{defproblem}}
+%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\@newproblemtngd}[4][0]{%
+\begin{defproblem}[#1]{#2}% 
+{\ifshowproblems 
+#3
+\ifthenelse{\value{@choice}=4}{\setcounter{@choice}{0}}{ }
+\else  \fi}
+\begin{onlysolution}%
+{\ifshowproblems 
+%%bo tróng
+\else
+{ 
+\begin{shortenumerate}
+#4
+\end{shortenumerate}
+\ifthenelse{\value{@choice}=4}{\setcounter{@choice}{0}}{ }
+}
+\fi}
+\end{onlysolution}%
+\end{defproblem}}
+%%%%%%%%%%%%%%%%%%
+\newcommand{\@snewproblembang}[3][0]{%
+\begin{defproblem}[#1]{#2}%
+ #3 
+\end{defproblem}}
+
+\newcommand{\@newproblembang}[4][0]{%
+\begin{defproblem}[#1]{#2}%
+ #3
+&
+\begin{minipage}[t]{0.3\textwidth }
+#4 
+\end{minipage} \\ %
+\hline %
+\begin{onlysolution}%
+% #4 
+\end{onlysolution}%
+\end{defproblem} }
+
+%%%%%%%%%%%%%%%%%%\textcircled{C}
+\def\@leftdot{\cboxv}
+\def\@rightdot{}
+\def\@upletter{\small\bfseries\Alph}
+\def\@mauchu{black}
+\def\@madethi{100}
+\newcommand{\cbox}[1]{{\large \textcircled{\raisebox{-0.5pt}{\normalsize #1}}}}
+\def\@khoanh{\cboxv}
+% \newcommand{\khoanh}[1]{\renewcommand{\@khoanh}{ #1}}
+\def\@leftdotd{\cboxv}
+\def\@rightdotd{}
+\newcommand{\khoanhd}[2]{\renewcommand{\@leftdotd}{#1}\renewcommand{\@rightdotd}{#2}}
+%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\@selected}{\@leftdotd{\textcolor{red}{\@upletter{@choice}}\@rightdotd}}
+\newcommand{\lamdapan}[1]{\renewcommand{\@selected}{\@leftdotd{\textcolor{red}{\@upletter{#1}}\@rightdotd}}}
+
+\newcommand{\@notselected}{ \iflietkeda  \else \@khoanh{\textcolor{\@mauchu}{\phantom{A}}}\fi }
+% \newcommand{\lamphieu}{\renewcommand{\@selected}{\fbox{\phantom{A}}}}
+\newcommand{\lamphieu}{
+\renewcommand{\@selected}{\@khoanh{\textcolor{\@mauchu}{\@upletter{@choice}}}}
+\renewcommand{\@notselected}{\@khoanh{\textcolor{\@mauchu}{\@upletter{@choice}}}}
+% \renewcommand{\@selected}{\fbox{\phantom{A}}}
+}
+
+
+
+\newcommand{\khonglamphieu}{
+\renewcommand{\@selected}{\@leftdotd{\textcolor{red}{\@upletter{@choice}}}}
+% \renewcommand{\@noselected}{\textcolor{\@mauchu}{\@khoanh{\phantom{A}}}}
+\renewcommand{\@notselected}{ \iflietkeda  \else \@khoanh{\textcolor{\@mauchu}{\phantom{A}}}\fi }
+% 
+}
+
+\newcommand{\lamphieurutgon}{
+% \renewcommand{\@selected}{\@leftdotd\textcolor{red}{\@upletter{@choice}}\@rightdotd}
+\renewcommand{\@selected}{\@khoanh{\@upletter{@choice}}}
+% \renewcommand{\@noselected}{\textcolor{\@mauchu}{\@khoanh{\phantom{A}}}}
+\renewcommand{\@notselected}{ \iflietkeda  \else \@khoanh{\textcolor{\@mauchu}{\phantom{A}}}\fi }
+% 
+}
+
+\newcommand{\lamphieuduclo}{
+\renewcommand{\@selected}{\fbox{\textcolor{\@mauchu}{\@upletter{@choice}}}}
+\renewcommand{\@notselected}{\@khoanh{\textcolor{\@mauchu}{\phantom{A}}}}
+% \renewcommand{\@selected}{\fbox{\phantom{A}}}\@khoanh
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%
+\newif\ifexceldem \exceldemfalse
+% \newcommand{\dapandung}{\@dapandung{##1}}
+\newwrite\tempfile
+\immediate\newwrite\file
+\immediate\openout\file=bangdapan.tex
+\newcommand\writefile{\immediate\write\file}
+\immediate\openout\tempfile=dapan\@madethi.xls
+
+
+\newcounter{@mot}\setcounter{@mot}{0}
+\newcounter{@hai}\setcounter{@hai}{0}
+\newcounter{@ba}\setcounter{@ba}{0}
+\newcounter{@bon}\setcounter{@bon}{0}
+\def\@dempa{%
+\ifnum\value{@choice}=1\addtocounter{@mot}{1}%
+\immediate\write\tempfile{A}%
+\writefile{\string\cboxv{A}&}%
+\fi%
+\ifnum\value{@choice}=2\addtocounter{@hai}{1}%
+\immediate\write\tempfile{B}%
+\writefile{\string\cboxv{B}&}%
+\fi%
+\ifnum\value{@choice}=3\addtocounter{@ba}{1}%
+\immediate\write\tempfile{C}%
+\writefile{\string\cboxv{C}&}%
+\fi%
+\ifnum\value{@choice}=4\addtocounter{@bon}{1}%
+\immediate\write\tempfile{D}%
+\writefile{\string\cboxv{D}&}%
+\fi %
+}
+
+\newif\ifmotda \motdafalse
+
+
+\newcommand{\sai}[1]{\addtocounter{@choice}{1}\ifmotda \else\ifshowproblems \item[\textcolor{\@mauchu}{\@leftdot{\@upletter{@choice}}\@rightdot}]%%
+\parbox[t]{\shortitemwidth}{#1}
+\else \@notselected\fi
+\fi} 
+%%\@rightdot\@leftdot\textbf{ Lời giải.} \causo
+% \def\dapandung{B}
+\newcommand{\dung}[1]{\addtocounter{@choice}{1}\ifmotda \noindent\ifshowanswers \else\causo \fi% 
+\textbf{ \textcolor{blue}{Lời giải.} } Đáp án đúng \@leftdotd{\textcolor{red}{\@upletter{@choice}}}\@rightdotd.\hspace*{-0.5em}%
+\ifnum\value{@choice}=1%
+\def\dapandung{\cboxv{A}}% 
+\def\dapansai{\cboxx{B},\cboxx{C},\cboxx{D}}% 
+\fi%
+\ifnum\value{@choice}=2%
+\def\dapandung{\cboxv{B}}% 
+\def\dapansai{\cboxx{A},\cboxx{C},\cboxx{D}}% 
+\fi%
+\ifnum\value{@choice}=3%
+\def\dapandung{\cboxv{C}}% 
+\def\dapansai{\cboxx{A},\cboxx{B},\cboxx{D}}% 
+\fi%
+\ifnum\value{@choice}=4%
+\def\dapandung{\cboxv{D}}% 
+\def\dapansai{\cboxx{A},\cboxx{B},\cboxx{C}}% 
+\fi%
+\else%
+ \ifshowproblems \ifshowanswers\item[\@leftdotd{\textcolor{red}{\@upletter{@choice}}}\@rightdot] %%%%[\cboxv{\@upletter{@choice}}]%
+\parbox[t]{\shortitemwidth}{\textcolor{red}{#1}}%
+\else \item [\textcolor{\@mauchu}{\@leftdot{\@upletter{@choice}}\@rightdot}]%
+\ifexceldem\@dempa\fi%
+\parbox[t]{\shortitemwidth}{#1}%%
+\fi%% 
+\else\@selected\fi %%
+\fi}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%+1.4\labelwidth
+\newcommand{\saih}[1]{\addtocounter{@choice}{1}\ifshowproblems $\underset{\mbox{\textcolor{\@mauchu}{\@upletter{@choice}}}}{\underline{\mbox{#1}}}$  \else $\underset{\mbox{\@notselected}}{\underline{\mbox{#1}}}$\fi} 
+
+\newcommand{\dungh}[1]{\addtocounter{@choice}{1}\ifshowproblems \ifshowanswers$\underset{\mbox{\cboxv{\@upletter{@choice}}}}{\underline{\mbox{#1}}}$ \else 
+$\underset{\mbox{\textcolor{\@mauchu}{\@upletter{@choice}}}}{\underline{\mbox{#1}}}$ \fi \else 
+$\underset{\mbox{\cboxv{\@upletter{@choice}}}}{\underline{\mbox{#1}}}$
+ \fi }
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% \@selected
+\newcommand{\khong}[1]{ \@notselected\ #1 \\  }
+\newcommand{\chon}[1]{\ifshowanswers  { \@khoanh{$\times$}  #1 \\  } \else  {\@notselected\ #1 \\ } \fi }
+%%%%%%%%%%%%%%%%%%%%%%%%%%%\
+\newcommand{\blank}[1]{\ifshowanswers \underline{\mbox{#1}}\else  \underline{\mbox{ \phantom{#1} }} \fi }
+\newcommand{\answer}[1]{\ifshowanswers \underline{\makebox[2cm]{#1}}\else  \underline{\makebox[2cm]{ \phantom{#1} }} \fi }
+\newcommand{\daugach}[1]{\underline{\makebox[2cm]{\qquad }}\  }
+
+\newcommand{\tieude}[1]{\ifshowproblems \par{\itshape\textbf{#1}} \else \fi }
+\newcommand{\chidan}[1]{\ifshowproblems  {#1} \else \fi }
+\newcommand{\madethi}[1]{\renewcommand{\@madethi}{#1}%
+}
+%%%%%%%%%%%%%%%%
+\newcommand{\@ttruong}{ĐẠI HỌC KHOA HỌC TỰ NHIÊN HÀ NỘI}
+\newcommand{\@tkhoa}{$\overline{\qquad\qquad\qquad}$}
+\newcommand{\@ldethi}{\small ĐỀ CHÍNH THỨC}
+\newcommand{\@tkythi}{ĐỀ THI KIỂM TRA GIỮA KÌ}
+\newcommand{\@tmonhoc}{Đại số tuyến tính}
+\newcommand{\@tenlop}{\ }
+\newcommand{\@tgian}{\  }
+\newcommand{\@tchuy}{\ }
+\newcommand{\@hovaten}{\ }
+\newcommand{\@sobaodanh}{\ }
+\newcommand{\@namhoc}{Năm học 2017 - 2018}
+\newcommand{\@hvt}{\vspace*{0.5cm}
+\centerline{\@hovaten \@tenlop\@sobaodanh}}
+% \newcommand{\cotdapan}{3}
+\newcommand{\@ketqua}{{\textbf{Họ tên và chữ kí của hai giám khảo}\hfil  
+\textbf{Số câu trả lời đúng:........., điểm:.........}\hfill}}
+\newcommand{\@giamkhao}{Giám khảo 1: ..............................\\[0.3cm]
+Giám khảo 2: ..............................}
+%%%%%%%%%%%%%%%%%%
+\newcommand{\tentruong}[1]{\renewcommand{\@ttruong}{\small #1}}
+\newcommand{\tenkhoa}[1]{\renewcommand{\@tkhoa}{#1}}
+\newcommand{\loaidethi}[1]{\renewcommand{\@ldethi}{\small #1}}
+\newcommand{\tenkythi}[1]{\renewcommand{\@tkythi}{\small #1}}
+\newcommand{\tenmonhoc}[1]{\renewcommand{\@tmonhoc}{#1}}
+\newcommand{\tenlop}[1]{\renewcommand{\@tenlop}{\makebox[5cm]{{\bf #1:}\dotfill} }}
+\newcommand{\thoigian}[1]{\renewcommand{\@tgian}{#1}}
+\newcommand{\namhoc}[1]{\renewcommand{\@namhoc}{#1}}
+\newcommand{\chuy}[1]{\renewcommand{\@tchuy}{#1}}
+\newcommand{\hovaten}[1]{\renewcommand{\@hovaten}{\makebox[8cm]{{\bf #1:}\dotfill} }}
+\newcommand{\sobaodanh}[1]{\renewcommand{\@sobaodanh}{\makebox[5cm]{{\bf  #1:}\dotfill } }}
+%%%\fbox{\phantom{O}}\fbox{\phantom{O}}\fbox{\phantom{O}}\fbox{\phantom{O}}\fbox{\phantom{O}}\fbox{\phantom{O}}\fbox{\phantom{O}}\fbox{\phantom{O}}}\\ }}
+% \newcommand{\socauhoi}[1]{\renewcommand{\@scau}{ #1}}
+\newcommand{\khoanh}[1]{\renewcommand{\@khoanh}{ #1}}
+\newcommand{\ketqua}[1]{\renewcommand{\@ketqua}{ #1}}
+\newcommand{\giamkhao}[1]{\renewcommand{\@giamkhao}{ #1}}
+\newcommand{\nohovaten}[1]{\renewcommand{\@hvt}{#1}}
+
+
+\newcommand{\lamtieude}{
+\begin{minipage}[b]{0.45\textwidth}
+\centering
+\textbf{\@ttruong}\\
+\textbf{\@tkhoa}\\[0.2cm]        
+\fboxw{\textbf{Mã đề thi: \@madethi}}\\
+\@ldethi
+\end{minipage}
+\hfill
+\begin{minipage}[b]{0.45\textwidth}
+\centering
+\textbf{\@tkythi}\\
+\textbf{\@namhoc}\\
+{\bf  \@tmonhoc}\\[0.2cm]  
+{\it \@tgian}
+\end{minipage}
+\par
+\@hvt
+}
+
+\newcommand{\lamphieuthi}{
+ \thispagestyle{empty}
+\begin{minipage}[b]{0.4\textwidth}
+\centering
+\textbf{\@ttruong}\\
+\@tkhoa\\[0.2cm]    
+\fboxw{\textbf{Mã đề thi: \@madethi}}
+%\makebox[4cm]{\textbf{Mã đề thi:} \fbox{\phantom{O}}\fbox{\phantom{O}}\fbox{\phantom{O}}}\\ %%\loaidethi\\
+% \quad \\
+\end{minipage}
+\hfill
+\begin{minipage}[b]{0.5\textwidth}
+\centering
+\textbf{\@tkythi}\\
+\textbf{\@namhoc}\\
+\textbf{\@tmonhoc}
+%{\it \@tgian}\\
+%  \qquad 
+\end{minipage}
+\begin{center}
+\textbf{\large PHIẾU TRẢ LỜI TRẮC NGHIỆM}
+\end{center}
+\vspace*{0.5cm}
+\centerline{\@hovaten 
+\@tenlop
+\@sobaodanh}
+\vspace*{0.3cm}
+
+\noindent
+\textbf{Thí sinh lưu ý:} - Giữ cho phiếu phẳng, không bôi bẩn, làm rách. Phải ghi đầy đủ các mục theo hướng dẫn.\\
+- Dùng bút chì đen tô kín các ô tròn trong mục: Số báo danh, Mã đề thi trước khi làm bài.
+
+\noindent 
+\textbf{Phần trả lời:} Số thứ tự câu trả lời dưới đây ứng với số thứ tự câu trắc nghiệm trong đề thi.
+Đối với mỗi câu trắc nghiệm, thí sinh chọn và tô kín một ô tròn tương ứng với phương án trả lời đúng.\\
+Cách tô đúng là: {\Huge\textbullet} và tô sai là \@khoanh{X}\@khoanh{V}\@khoanh{\LARGE $\bullet$}:
+\vspace*{0.5cm}
+}
+
+\newcommand{\mauchu}[1]{\renewcommand{\@mauchu}{#1}}
+\newcommand{\daungoac}[2]{\renewcommand{\@leftdot}{#1}\renewcommand{\@rightdot}{#2}}
+\newcommand{\chuphuongan}[1]{\renewcommand{\@upletter}{#1}} 
+\makeatletter
+\def\@trangcuoi{\getpagerefnumber{DebaiPage}}
+%\newcommand{\trangcuoi}[1]{\renewcommand{\@trangcuoi}{\pageref{#1}}}
+\newcommand{\trangcuoi}[1]{\renewcommand{\@trangcuoi}{\getpagerefnumber{#1}}}
+%%%%%%%%%%%%%%%%%%lưláiau
+\newcommand{\tieudeduoi}[1]{
+\renewcommand{\@oddfoot}{%tieudeduoi
+\parbox{\textwidth}{%
+\noindent\hrulefill\par
+{#1\hfill   Trang\ \thepage/\@trangcuoi\ - Mã đề thi \@madethi}
+}}
+}
+%%%%%%}
+
+%%%%%%%%%%%%
+\makeatother
+%%%%%%%%%%%%%%%%
+
+\def\examvspace{\vspace}
+\def\examhspace{\hspace}
+%%%%%%%%%%%%%%
+\newif\ifmoiloigiai \moiloigiaifalse
+ \newif\ifcholoigiai \choloigiaifalse
+%%%%%%%%%
+\def\coloigiai{\choloigiaitrue\moiloigiaitrue}           %In ra đáp án có lời giải
+\def\khongloigiai{\choloigiaifalse\moiloigiaifalse}           %In ra đáp án có lời giải
+% \newcommand{\bonpa}[4]{#1 #2 #3 #4}
+\newcommand{\@nampa}[5]{
+\count1=\value{enumi}
+\count2=\value{enumi}
+%  \divide \count1 by 24
+ \divide \count1 by 61
+\ifcase\count1 % select font face
+%          \or \advance\count2 by -23
+          \or \advance\count2 by -60
+%          \or \advance\count2 by -71
+          \or \advance\count2 by -120
+          \or \advance\count2 by -180
+          \or \advance\count2 by -240
+          \or \advance\count2 by -300
+          \or \advance\count2 by -360
+          \or \advance\count2 by -420
+          \or \advance\count2 by -480
+          \or \advance\count2 by -540
+          \or \advance\count2 by -600
+      \fi
+
+  \ifcase\count2 
+
+\or #5#3#4#1#2 %1
+\or #4#5#3#2#1 %2
+\or #1#2#5#3#4 %3
+\or #2#1#4#5#3 %4
+\or #1#4#2#3#5 %5
+\or #2#3#1#5#4 %6
+\or #4#1#5#3#2 %7
+\or #3#5#2#4#1 %8
+\or #5#1#3#2#4 %9
+\or #3#5#1#4#2 %10
+\or #2#4#5#3#1 %11
+\or #4#2#1#5#3 %12
+\or #2#1#3#4#5 %13
+\or #1#2#4#5#3 %14
+\or #4#3#5#1#2 %15
+\or #5#3#4#2#1 %16
+\or #5#1#3#4#2 %17
+\or #2#5#4#1#3 %18
+\or #3#1#5#2#4 %19
+\or #4#2#3#5#1 %20
+\or #4#1#2#3#5 %21
+\or #1#4#3#2#5 %22
+\or #2#3#4#5#1 %23
+\or #3#2#5#1#4 %24
+%%%%%%%%%%%
+\or #2#5#4#1#3 %18
+\or #5#3#1#2#4 %19
+\or #4#5#2#3#1 %20
+\or #4#1#5#2#3 %21
+\or #1#4#5#3#2 %22
+\or #1#4#2#5#3 %5
+\or #2#3#1#4#5 %6
+\or #3#4#1#2#5 %1
+\or #4#3#2#5#1 %2
+\or #1#5#2#3#4 %3
+\or #5#2#1#4#3 %4
+\or #4#5#1#3#2 %7
+\or #3#2#5#4#1 %8
+\or #2#3#5#4#1 %23
+\or #3#2#1#5#4 %24
+\or #4#3#1#2#5 %15
+\or #3#4#2#1#5 %16
+\or #1#3#4#5#2 %17
+\or #3#1#5#4#2 %10
+\or #2#4#5#3#1 %11
+\or #4#5#2#1#3 %12
+\or #2#5#1#3#4 %13
+\or #5#1#2#4#3 %14
+\or #1#5#3#2#4 %9
+%%%%%%%%
+\or #3#4#5#2#1 %16
+\or #1#3#4#2#5 %17
+\or #3#1#4#5#2 %10
+\or #2#4#5#3#1 %11
+\or #1#5#2#3#4 %3
+\or #2#5#1#4#3 %4
+\or #5#4#1#3#2 %7
+\or #5#3#2#4#1 %8
+\or #3#1#5#2#4 %19
+\or #4#2#5#3#1 %20
+\or #3#2#1#5#4 %24
+\or #4#3#1#2#5 %15
+\else
+#4#3#2#1#5
+\fi
+}
+
+%%%%%%%%%%%%
+\newlength\widthcha
+\newlength\widthchb
+\newlength\widthchc
+\newlength\widthchd
+\newlength\widthche
+\newlength\widthch
+\newlength\tabmaxwidth
+\newlength\fifthtabwidth
+\newlength\thirdtabwidth
+\newlength\fourthtabwidth
+ \newlength\halftabwidth
+\setlength{\widthch}{0pt}
+\newcommand{\nampa}[7][0]{%
+\ifthenelse{#1=0}{
+\setlength\tabmaxwidth{\linewidth-\picwd-\lwindowsep}
+% 	\setlength\fourthtabwidth{0.25\linewidth-0.25\picwd-0.25\lwindowsep}
+% 	\setlength\halftabwidth{0.5\linewidth-0.5\picwd-0.5\lwindowsep}
+% 	\setlength\fifthtabwidth{0.2\linewidth-0.2\picwd-0.2\lwindowsep}
+\setlength\thirdtabwidth{0.30\linewidth-2\picwd-1\lwindowsep}
+ \setlength\fifthtabwidth{0.20\linewidth-2\picwd-1.5\lwindowsep}
+% \setlength\fourthtabwidth{0.24\linewidth-2\picwd-2\lwindowsep}
+\setlength\halftabwidth{0.46\linewidth-2\picwd-1\lwindowsep}
+\settowidth\widthcha{PA.#3}
+\settowidth\widthchb{PB.#4}%
+\settowidth\widthchc{PC.#5}%
+\settowidth\widthchd{PD.#6}%
+\settowidth\widthchd{PE.#7}%
+\ifdim\widthcha<\widthchb
+\setlength{\widthch}{\widthchb}
+\else%
+\setlength{\widthch}{\widthcha}
+\fi%
+\ifdim\widthch<\widthchc
+\setlength{\widthch}{\widthchc}
+\fi%
+\ifdim\widthch<\widthchd
+\setlength{\widthch}{\widthchd}
+\fi%
+\ifdim\widthch<\widthche
+\setlength{\widthch}{\widthche}
+\fi%
+\ifdim\widthch<\fifthtabwidth
+     \setlength{\shortitemwidth}{0.2\linewidth-2.8em}
+\else\ifdim\widthch<\thirdtabwidth
+     \setlength{\shortitemwidth}{\linewidth/3-3.1em}
+ \else\ifdim\widthch<\halftabwidth
+     \setlength{\shortitemwidth}{\linewidth/2-3.5em}
+        \else   
+\setlength{\shortitemwidth}{\linewidth-3em}
+      \fi
+\fi
+ \fi
+}{
+\ifcase#1
+\or
+\setlength{\shortitemwidth}{\linewidth-3em}
+\or
+ \setlength{\shortitemwidth}{\linewidth/2-3.5em}
+\or
+\setlength{\shortitemwidth}{\linewidth/3-3.1em}
+\or
+% \setlength{\shortitemwidth}{\linewidth/4-3.1em}
+\or
+     \setlength{\shortitemwidth}{0.2\linewidth-2.8em}
+\fi
+}
+\ifcase#2
+\or
+\@nampa{\dung{#3}}{\sai{#4}}{\sai{#5}}{\sai{#6}}{\sai{#7}} 
+\or
+\@nampa{\sai{#3}}{\dung{#4}}{\sai{#5}}{\sai{#6}}{\sai{#7}} 
+\or
+\@nampa{\sai{#3}}{\sai{#4}}{\dung{#5}}{\sai{#6}}{\sai{#7}} 
+\or
+\@nampa{\sai{#3}}{\sai{#4}}{\sai{#5}}{\dung{#6}}{\sai{#7}} 
+\or
+\@nampa{\sai{#3}}{\sai{#4}}{\sai{#5}}{\sai{#6}}{\dung{#7}} 
+\fi
+ }
+%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%
+\newcommand{\@bonpa}[4]{
+\count1=\value{enumi}
+\count2=\value{enumi}
+%  \divide \count1 by 24
+ \divide \count1 by 61
+\ifcase\count1 % select font face
+%          \or \advance\count2 by -23
+          \or \advance\count2 by -60
+%          \or \advance\count2 by -71
+          \or \advance\count2 by -120
+          \or \advance\count2 by -180
+          \or \advance\count2 by -240
+          \or \advance\count2 by -300
+          \or \advance\count2 by -360
+          \or \advance\count2 by -420
+          \or \advance\count2 by -480
+          \or \advance\count2 by -540
+          \or \advance\count2 by -600
+      \fi
+
+  \ifcase\count2 
+
+\or #3#4#1#2 %1
+\or #4#3#2#1 %2
+\or #1#2#3#4 %3
+\or #2#1#4#3 %4
+\or #1#4#2#3 %5
+\or #2#3#1#4 %6
+\or #4#1#3#2 %7
+\or #3#2#4#1 %8
+\or #1#3#2#4 %9
+\or #3#1#4#2 %10
+\or #2#4#3#1 %11
+\or #4#2#1#3 %12
+\or #2#1#3#4 %13
+\or #1#2#4#3 %14
+\or #4#3#1#2 %15
+\or #3#4#2#1 %16
+\or #1#3#4#2 %17
+\or #2#4#1#3 %18
+\or #3#1#2#4 %19
+\or #4#2#3#1 %20
+\or #4#1#2#3 %21
+\or #1#4#3#2 %22
+\or #2#3#4#1 %23
+\or #3#2#1#4 %24
+%%%%%%%%%%%
+\or #2#4#1#3 %18
+\or #3#1#2#4 %19
+\or #4#2#3#1 %20
+\or #4#1#2#3 %21
+\or #1#4#3#2 %22
+\or #1#4#2#3 %5
+\or #2#3#1#4 %6
+\or #3#4#1#2 %1
+\or #4#3#2#1 %2
+\or #1#2#3#4 %3
+\or #2#1#4#3 %4
+\or #4#1#3#2 %7
+\or #3#2#4#1 %8
+\or #2#3#4#1 %23
+\or #3#2#1#4 %24
+\or #4#3#1#2 %15
+\or #3#4#2#1 %16
+\or #1#3#4#2 %17
+\or #3#1#4#2 %10
+\or #2#4#3#1 %11
+\or #4#2#1#3 %12
+\or #2#1#3#4 %13
+\or #1#2#4#3 %14
+\or #1#3#2#4 %9
+%%%%%%%%
+\or #3#4#2#1 %16
+\or #1#3#4#2 %17
+\or #3#1#4#2 %10
+\or #2#4#3#1 %11
+\or #1#2#3#4 %3
+\or #2#1#4#3 %4
+\or #4#1#3#2 %7
+\or #3#2#4#1 %8
+\or #3#1#2#4 %19
+\or #4#2#3#1 %20
+\or #3#2#1#4 %24
+\or #4#3#1#2 %15
+\else
+#4#3#2#1
+\fi
+}
+%%%%%%%%%%%%
+
+\newcommand{\bonpa}[6][0]{%
+\ifthenelse{#1=0}{
+\setlength\fourthtabwidth{0.24\linewidth-2\picwd-2\lwindowsep}
+%\setlength\fourthtabwidth{0.23\linewidth-2.4\picwd-2.4\lwindowsep}
+\setlength\halftabwidth{0.47\linewidth-\picwd-\lwindowsep}
+\settowidth\widthcha{PA.#3}
+\settowidth\widthchb{PB.#4}%
+\settowidth\widthchc{PC.#5}%
+\settowidth\widthchd{PD.#6}%
+\ifdim\widthcha<\widthchb
+\setlength{\widthch}{\widthchb}
+\else%
+\setlength{\widthch}{\widthcha}
+\fi%
+\ifdim\widthch<\widthchc
+\setlength{\widthch}{\widthchc}
+\fi%
+\ifdim\widthch<\widthchd
+\setlength{\widthch}{\widthchd}
+\fi%
+\ifdim\widthch<\fourthtabwidth
+    \setlength{\shortitemwidth}{\linewidth/4-3.1em}
+%      \setlength{\shortitemwidth}{0.19\textwidth-0.4em}
+\else\ifdim\widthch<\halftabwidth
+ \setlength{\shortitemwidth}{\linewidth/2-3.5em}
+%         \setlength{\shortitemwidth}{0.40\textwidth-0.1em}
+        \else   
+        \setlength{\shortitemwidth}{\linewidth-3em}
+      \fi
+\fi
+}{
+\ifcase#1
+\or
+\setlength{\shortitemwidth}{\linewidth-3em}
+\or
+ \setlength{\shortitemwidth}{\linewidth/2-3.5em}
+\or
+\setlength{\shortitemwidth}{0.31\linewidth}
+\or
+\setlength{\shortitemwidth}{\linewidth/4-3.1em}
+\or
+\setlength{\shortitemwidth}{0.18\linewidth-3.1em}
+\fi
+}
+\ifcase#2
+\@bonpa{\sai{#3}}{\sai{#4}}{\sai{#5}}{\sai{#6}} 
+\or
+\@bonpa{\dung{#3}}{\sai{#4}}{\sai{#5}}{\sai{#6}} 
+\or
+\@bonpa{\sai{#3}}{\dung{#4}}{\sai{#5}}{\sai{#6}} 
+\or
+\@bonpa{\sai{#3}}{\sai{#4}}{\dung{#5}}{\sai{#6}} 
+\or
+\@bonpa{\sai{#3}}{\sai{#4}}{\sai{#5}}{\dung{#6}} 
+\or
+\or
+\or
+\or
+\or
+\or
+\or
+\or
+\@bonpa{\dung{#3}}{\dung{#4}}{\sai{#5}}{\sai{#6}} 
+\or
+\@bonpa{\dung{#3}}{\sai{#4}}{\dung{#5}}{\sai{#6}} 
+\or
+\@bonpa{\dung{#3}}{\sai{#4}}{\sai{#5}}{\dung{#6}} 
+\else
+\ifthenelse{#2=23}
+{
+\@bonpa{\sai{#3}}{\dung{#4}}{\dung{#5}}{\sai{#6}} 
+}{
+\ifthenelse{#2=24}
+{
+\@bonpa{\sai{#3}}{\dung{#4}}{\sai{#5}}{\dung{#6}} 
+}{
+\ifthenelse{#2=34}
+{
+\@bonpa{\sai{#3}}{\sai{#4}}{\dung{#5}}{\dung{#6}} 
+}{
+}}}
+\fi
+ }
+%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%
+\newcommand{\@bonpat}[4]{
+ \vspace*{-0.1\baselineskip}
+%  \hspace*{-0.5\baselineskip}
+\count1=\value{enumi}
+\count2=\value{enumi}
+ \divide \count1 by 24
+  \ifcase\count1 % select font face
+          \or \advance\count2 by -23
+          \or \advance\count2 by -47
+          \or \advance\count2 by -71
+          \or \advance\count2 by -95
+          \or \advance\count2 by -119
+      \fi
+
+  \ifcase\count2 
+\or #3#4#1#2
+\or #4#3#2#1
+\or #1#2#3#4
+\or #2#1#4#3
+\or #1#4#2#3
+\or #2#3#1#4
+\or #4#1#3#2
+\or #3#2#4#1
+\or #1#3#2#4
+\or #3#1#4#2
+\or #2#4#3#1
+\or #4#2#1#3
+\or #2#1#3#4
+\or #1#2#4#3
+\or #4#3#1#2
+\or #3#4#2#1
+\or #1#3#4#2
+\or #2#4#1#3
+\or #3#1#2#4
+\or #4#2#3#1
+\or #4#1#2#3
+\or #1#4#3#2
+\or #2#3#4#1
+\or #3#2#1#4
+\else
+#4#3#2#1
+\fi
+}
+%%%%%%%%%%%%Nâng các phương án lên
+\newcommand{\bonpat}[6][0]{%
+\ifthenelse{#1=0}{
+\setlength\fourthtabwidth{0.26\linewidth-2\picwd-2\lwindowsep}
+\setlength\halftabwidth{0.47\linewidth-\picwd-\lwindowsep}
+\settowidth\widthcha{PA.#3}
+\settowidth\widthchb{PB.#4}%
+\settowidth\widthchc{PC.#5}%
+\settowidth\widthchd{PD.#6}%
+\ifdim\widthcha<\widthchb
+\setlength{\widthch}{\widthchb}
+\else%
+\setlength{\widthch}{\widthcha}
+\fi%
+\ifdim\widthch<\widthchc
+\setlength{\widthch}{\widthchc}
+\fi%
+\ifdim\widthch<\widthchd
+\setlength{\widthch}{\widthchd}
+\fi%
+\ifdim\widthch<\fourthtabwidth
+     \setlength{\shortitemwidth}{\linewidth/4-3.1em}
+\else\ifdim\widthch<\halftabwidth
+        \setlength{\shortitemwidth}{\linewidth/2-3.5em}
+        \else   
+        \setlength{\shortitemwidth}{\linewidth-3em}
+      \fi
+\fi
+}{
+\ifcase#1
+\or
+\setlength{\shortitemwidth}{\linewidth-3em}
+\or
+\setlength{\shortitemwidth}{\linewidth/2-3.5em}
+\or
+\setlength{\shortitemwidth}{0.31\linewidth}
+\or
+\setlength{\shortitemwidth}{\linewidth/4-3.1em}
+\or
+\setlength{\shortitemwidth}{0.18\linewidth-3.1em}
+\fi
+}
+\ifcase#2
+\or
+\@bonpat{\dung{#3}}{\sai{#4}}{\sai{#5}}{\sai{#6}} 
+\or
+\@bonpat{\sai{#3}}{\dung{#4}}{\sai{#5}}{\sai{#6}} 
+\or
+\@bonpat{\sai{#3}}{\sai{#4}}{\dung{#5}}{\sai{#6}} 
+\or
+\@bonpat{\sai{#3}}{\sai{#4}}{\sai{#5}}{\dung{#6}} 
+\fi
+ }
+%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\@bonpab}[4]{ %% Phương án bốn không đổi\bonpab cũ
+% \daopa{\count1}{6}
+%   \ifcase\count1 
+\count1=\value{enumi}
+\count2=\value{enumi}
+ \divide \count1 by 6
+  \ifcase\count1 % select font face
+          \or \advance\count2 by -5
+          \or \advance\count2 by -11
+          \or \advance\count2 by -17
+          \or \advance\count2 by -23
+          \or \advance\count2 by -29
+          \or \advance\count2 by -35
+          \or \advance\count2 by -41
+          \or \advance\count2 by -47
+          \or \advance\count2 by -53
+          \or \advance\count2 by -59
+          \or \advance\count2 by -65
+          \or \advance\count2 by -71
+          \or \advance\count2 by -77
+          \or \advance\count2 by -83
+          \or \advance\count2 by -89
+          \or \advance\count2 by -95
+          \or \advance\count2 by -101
+          \or \advance\count2 by -107
+          \or \advance\count2 by -113
+      \fi
+
+  \ifcase\count2 
+\or #1#2#3#4
+\or #1#3#2#4
+\or #2#1#3#4
+\or #2#3#1#4
+\or #3#1#2#4
+\or #3#2#1#4
+\or #1#2#3#4
+\or #1#3#2#4
+\or #2#1#3#4
+\or #2#3#1#4
+\or #3#1#2#4
+\or #3#2#1#4
+\or #1#2#3#4
+\or #1#3#2#4
+\or #2#1#3#4
+\or #2#3#1#4
+\or #3#1#2#4
+\or #3#2#1#4
+\or #3#2#1#4
+\else
+#1#2#3#4
+\fi
+}                                                 
+%%%%%%%%%%%%%%%%%
+\newcommand{\bonpab}[6][0]{%
+\ifthenelse{#1=0}{
+\setlength\fourthtabwidth{0.24\linewidth-2\picwd-2\lwindowsep}
+\setlength\halftabwidth{0.47\linewidth-\picwd-\lwindowsep}
+\settowidth\widthcha{PA.#3}
+\settowidth\widthchb{PB.#4}%
+\settowidth\widthchc{PC.#5}%
+\settowidth\widthchd{PD.#6}%
+\ifdim\widthcha<\widthchb
+\setlength{\widthch}{\widthchb}
+\else%
+\setlength{\widthch}{\widthcha}
+\fi%
+\ifdim\widthch<\widthchc
+\setlength{\widthch}{\widthchc}
+\fi%
+\ifdim\widthch<\widthchd
+\setlength{\widthch}{\widthchd}
+\fi%
+\ifdim\widthch<\fourthtabwidth
+     \setlength{\shortitemwidth}{\linewidth/4-3.1em}
+\else\ifdim\widthch<\halftabwidth
+        \setlength{\shortitemwidth}{\linewidth/2-3.5em}
+        \else   
+        \setlength{\shortitemwidth}{\linewidth-3em}
+      \fi
+\fi
+}{
+\ifcase#1
+\or
+\setlength{\shortitemwidth}{\linewidth-3em}
+\or
+\setlength{\shortitemwidth}{\linewidth/2-3.5em}
+\or
+\setlength{\shortitemwidth}{0.31\linewidth}
+\or
+\setlength{\shortitemwidth}{\linewidth/4-3.1em}
+\or
+\setlength{\shortitemwidth}{0.18\linewidth-3.1em}
+\fi
+}
+\ifcase#2
+\or
+\@bonpab{\dung{#3}}{\sai{#4}}{\sai{#5}}{\sai{#6}} 
+\or
+\@bonpab{\sai{#3}}{\dung{#4}}{\sai{#5}}{\sai{#6}} 
+\or
+\@bonpab{\sai{#3}}{\sai{#4}}{\dung{#5}}{\sai{#6}} 
+\or
+\@bonpab{\sai{#3}}{\sai{#4}}{\sai{#5}}{\dung{#6}} 
+\fi
+ }
+%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\@bonpak}[4]{#1#2#3#4}
+%%%%%%%%%%%%%%%%%
+\newcommand{\bonpak}[6][0]{%
+\ifthenelse{#1=0}{
+\setlength\fourthtabwidth{0.24\linewidth-2\picwd-2\lwindowsep}
+\setlength\halftabwidth{0.47\linewidth-\picwd-\lwindowsep}
+\settowidth\widthcha{PA.#3}
+\settowidth\widthchb{PB.#4}%
+\settowidth\widthchc{PC.#5}%
+\settowidth\widthchd{PD.#6}%
+\ifdim\widthcha<\widthchb
+\setlength{\widthch}{\widthchb}
+\else%
+\setlength{\widthch}{\widthcha}
+\fi%
+\ifdim\widthch<\widthchc
+\setlength{\widthch}{\widthchc}
+\fi%
+\ifdim\widthch<\widthchd
+\setlength{\widthch}{\widthchd}
+\fi%
+\ifdim\widthch<\fourthtabwidth
+     \setlength{\shortitemwidth}{\linewidth/4-3.1em}
+\else\ifdim\widthch<\halftabwidth
+        \setlength{\shortitemwidth}{\linewidth/2-3.5em}
+        \else   
+        \setlength{\shortitemwidth}{\linewidth-3em}
+      \fi
+\fi
+}{
+\ifcase#1
+\or
+\setlength{\shortitemwidth}{\linewidth-3em}
+\or
+\setlength{\shortitemwidth}{\linewidth/2-3.5em}
+\or
+\setlength{\shortitemwidth}{0.31\linewidth}
+\or
+\setlength{\shortitemwidth}{\linewidth/4-3.1em}
+\or
+\setlength{\shortitemwidth}{0.18\linewidth-3.1em}
+\fi
+}
+\ifcase#2
+\or
+\@bonpak{\dung{#3}}{\sai{#4}}{\sai{#5}}{\sai{#6}} 
+\or
+\@bonpak{\sai{#3}}{\dung{#4}}{\sai{#5}}{\sai{#6}} 
+\or
+\@bonpak{\sai{#3}}{\sai{#4}}{\dung{#5}}{\sai{#6}} 
+\or
+\@bonpak{\sai{#3}}{\sai{#4}}{\sai{#5}}{\dung{#6}} 
+\fi
+ }
+%%%%%%%%%%%%%%%%%%%%%
+
+
+% \newcommand{\bonpah}[4]{#1 #2 #3 #4}
+
+% \newcommand{\bapa}[3]{#1#2#3}
+\newcommand{\@bapa}[3]{ 
+% \daopa{\count1}{6}
+%   \ifcase\count1
+\count1=\value{enumi}
+\count2=\value{enumi}
+ \divide \count1 by 6
+  \ifcase\count1 % select font face
+          \or \advance\count2 by -5
+          \or \advance\count2 by -11
+          \or \advance\count2 by -17
+          \or \advance\count2 by -23
+          \or \advance\count2 by -29
+          \or \advance\count2 by -35
+          \or \advance\count2 by -41
+          \or \advance\count2 by -47
+          \or \advance\count2 by -53
+          \or \advance\count2 by -59
+          \or \advance\count2 by -65
+          \or \advance\count2 by -71
+          \or \advance\count2 by -77
+          \or \advance\count2 by -83
+          \or \advance\count2 by -89
+          \or \advance\count2 by -95
+          \or \advance\count2 by -101
+          \or \advance\count2 by -107
+          \or \advance\count2 by -113
+      \fi
+  \ifcase\count2 
+\or #1#2#3
+\or #1#3#2
+\or #2#1#3
+\or #2#3#1
+\or #3#1#2
+\or #3#2#1
+\or #1#2#3
+\or #1#3#2
+\or #2#1#3
+\or #2#3#1
+\or #3#1#2
+\or #3#2#1
+\or #1#2#3
+\or #1#3#2
+\or #2#1#3
+\or #2#3#1
+\or #3#1#2
+\or #3#2#1
+\else 
+#1#2#3
+\fi
+}            
+%%%%%%%
+\newcommand{\bapa}[5][0]{%
+\ifthenelse{#1=0}{
+\setlength\fourthtabwidth{0.34\linewidth-2\picwd-2\lwindowsep}
+\setlength\halftabwidth{0.47\linewidth-\picwd-\lwindowsep}
+\settowidth\widthcha{PA.#3}
+\settowidth\widthchb{PB.#4}%
+\settowidth\widthchc{PC.#5}%
+\ifdim\widthcha<\widthchb
+\setlength{\widthch}{\widthchb}
+\else%
+\setlength{\widthch}{\widthcha}
+\fi%
+\ifdim\widthch<\widthchc
+\setlength{\widthch}{\widthchc}
+\fi%
+\ifdim\widthch<\fourthtabwidth
+     \setlength{\shortitemwidth}{\linewidth/3-3.1em}
+\else\ifdim\widthch<\halftabwidth
+        \setlength{\shortitemwidth}{\linewidth/2-3.5em}
+        \else   
+        \setlength{\shortitemwidth}{\linewidth-3em}
+      \fi
+\fi
+}{
+\ifcase#1
+\or
+\setlength{\shortitemwidth}{\linewidth-3em}
+\or
+\setlength{\shortitemwidth}{\linewidth/2-3.5em}
+\or
+\setlength{\shortitemwidth}{0.31\linewidth}
+\or
+\setlength{\shortitemwidth}{\linewidth/4-3.1em}
+\fi
+}
+\ifcase#2
+\or
+\@bapa{\dung{#3}}{\sai{#4}}{\sai{#5}}
+\or
+\@bapa{\sai{#3}}{\dung{#4}}{\sai{#5}} 
+\or
+\@bapa{\sai{#3}}{\sai{#4}}{\dung{#5}}
+\fi
+ }
+%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\@bapak}[3]{
+#1#2#3
+}
+%%%%%%%
+\newcommand{\bapak}[5][0]{%
+\ifthenelse{#1=0}{
+\setlength\fourthtabwidth{0.34\linewidth-2\picwd-2\lwindowsep}
+\setlength\halftabwidth{0.47\linewidth-\picwd-\lwindowsep}
+\settowidth\widthcha{PA.#3}
+\settowidth\widthchb{PB.#4}%
+\settowidth\widthchc{PC.#5}%
+\ifdim\widthcha<\widthchb
+\setlength{\widthch}{\widthchb}
+\else%
+\setlength{\widthch}{\widthcha}
+\fi%
+\ifdim\widthch<\widthchc
+\setlength{\widthch}{\widthchc}
+\fi%
+\ifdim\widthch<\fourthtabwidth
+     \setlength{\shortitemwidth}{\linewidth/3-3.1em}
+\else\ifdim\widthch<\halftabwidth
+        \setlength{\shortitemwidth}{\linewidth/2-3.5em}
+        \else   
+        \setlength{\shortitemwidth}{\linewidth-3em}
+      \fi
+\fi
+}{
+\ifcase#1
+\or
+\setlength{\shortitemwidth}{\linewidth-3em}
+\or
+\setlength{\shortitemwidth}{\linewidth/2-3.5em}
+\or
+\setlength{\shortitemwidth}{0.31\linewidth}
+\or
+\setlength{\shortitemwidth}{\linewidth/4-3.1em}
+\fi
+}
+\ifcase#2
+\or
+\@bapak{\dung{#3}}{\sai{#4}}{\sai{#5}}
+\or
+\@bapak{\sai{#3}}{\dung{#4}}{\sai{#5}} 
+\or
+\@bapak{\sai{#3}}{\sai{#4}}{\dung{#5}}
+\fi
+ }
+%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\@bapab}[3]{
+ \ifodd\value{enumi} #1#2#3 \else #2#1#3 \fi
+}                         
+
+%%%%%%%
+\newcommand{\bapab}[5][0]{%
+\ifthenelse{#1=0}{
+\setlength\fourthtabwidth{0.34\linewidth-2\picwd-2\lwindowsep}
+\setlength\halftabwidth{0.47\linewidth-\picwd-\lwindowsep}
+\settowidth\widthcha{PA.#3}
+\settowidth\widthchb{PB.#4}%
+\settowidth\widthchc{PC.#5}%
+\ifdim\widthcha<\widthchb
+\setlength{\widthch}{\widthchb}
+\else%
+\setlength{\widthch}{\widthcha}
+\fi%
+\ifdim\widthch<\widthchc
+\setlength{\widthch}{\widthchc}
+\fi%
+\ifdim\widthch<\fourthtabwidth
+     \setlength{\shortitemwidth}{\linewidth/3-3.1em}
+ %    \setlength{\shortitemwidth}{\linewidth/4-3.1em}
+\else\ifdim\widthch<\halftabwidth
+        \setlength{\shortitemwidth}{\linewidth/2-3.5em}
+        \else   
+        \setlength{\shortitemwidth}{\linewidth-3em}
+      \fi
+\fi
+}{
+\ifcase#1
+\or
+\setlength{\shortitemwidth}{\linewidth-3em}
+\or
+\setlength{\shortitemwidth}{\linewidth/2-3.5em}
+\or
+\setlength{\shortitemwidth}{0.31\linewidth}
+\or
+\setlength{\shortitemwidth}{\linewidth/4-3.1em}
+\fi
+}
+\ifcase#2
+\or
+\@bapab{\dung{#3}}{\sai{#4}}{\sai{#5}}
+\or
+\@bapab{\sai{#3}}{\dung{#4}}{\sai{#5}} 
+\or
+\@bapab{\sai{#3}}{\sai{#4}}{\dung{#5}}
+\fi
+ }
+%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\@haipa}[2]{
+ \ifodd\value{enumi} #1#2 \else #2#1 \fi
+}                      
+%%%%%%%
+\newcommand{\haipa}[4][0]{%
+\ifthenelse{#1=0}{
+\setlength\fourthtabwidth{0.47\linewidth-\picwd-\lwindowsep}
+\setlength\halftabwidth{0.47\linewidth-\picwd-\lwindowsep}
+\settowidth\widthcha{PA.#3}
+\settowidth\widthchb{PB.#4}%
+\ifdim\widthcha<\widthchb
+\setlength{\widthch}{\widthchb}
+\else%
+\setlength{\widthch}{\widthcha}
+\fi%
+\ifdim\widthch<\fourthtabwidth
+     \setlength{\shortitemwidth}{\linewidth/2-3.5em}
+\else\ifdim\widthch<\halftabwidth
+%         \setlength{\shortitemwidth}{\linewidth/2-3.5em}
+ \setlength{\shortitemwidth}{\linewidth-3em}
+        \else   
+        \setlength{\shortitemwidth}{\linewidth-3em}
+      \fi
+\fi
+}{
+\ifcase#1
+\or
+\setlength{\shortitemwidth}{\linewidth-3em}
+\or
+\setlength{\shortitemwidth}{\linewidth/2-3.5em}
+\or
+\setlength{\shortitemwidth}{0.31\linewidth}
+\or
+\setlength{\shortitemwidth}{\linewidth/4-3.1em}
+\fi
+}
+\ifcase#2
+\or
+\@haipa{\dung{#3}}{\sai{#4}}
+\or
+\@haipa{\sai{#3}}{\dung{#4}}
+\fi
+ }
+%%%%%%%%%%%%%%%%%%%%%
+% \newcommand{\haipak}[2]{ #1#2 }                      
+
+%%%%%%%%%%%%%%%%%%%
+\AtBeginEnvironment{shortenumerate}{
+\setlength{\itemindent}{0em}
+\setlength{\parsep}{0pt}
+\setlength{\itemsep}{0pt}
+\setlength{\topsep}{0pt}
+\setlength{\parskip}{-1ex}
+\setlength{\partopsep}{0pt}
+ \setlength{\runitemsep}{1ex}
+ \setlength{\labelsep}{4pt}
+}
+\AtEndEnvironment{shortenumerate}{
+% \ifnum\value{@choice}=4
+\setcounter{@choice}{0}
+% \fi
+}
+
+\newlength\@bohinh
+\setlength{\@bohinh}{0pt}
+\newlength\@keodaipa
+\setlength{\@keodaipa}{0pt}
+\newlength\@heightpa
+\setlength{\@heightpa}{0pt}
+\newlength\heightfig
+ \newlength\heighttxt
+\setlength{\heighttxt}{0pt}
+
+% \BeforeBeginEnvironment{multicols}{
+%  \setlength{\columnsep}{2pt}
+% }
+
+\BeforeBeginEnvironment{shortenumerate}{
+\ifdim \heightfig>0pt 
+\setlength{\widthtemp}{\linewidth}
+\ifdim\dimexpr\heightfig-\baselineskip>\heighttxt
+\setlength{\linewidth}{\linewidth-\widthfig}
+\else
+ \setlength{\widthfig}{0pt}
+\fi
+\fi
+}
+
+\AfterEndEnvironment{shortenumerate}{
+\ifdim \heightfig>0pt 
+\setlength{\linewidth}{\widthtemp}
+\setlength{\widthfig}{0pt}
+%\setlength{\@keodaipa}{\dimexpr\heightfig-\heighttxt-\@heightpa+1\baselineskip}
+\setlength{\@keodaipa}{\dimexpr\heightfig-\heighttxt-2\baselineskip}
+\ifdim\@keodaipa<0pt %
+\relax
+\else
+\vspace*{\dimexpr\@keodaipa+0.5\baselineskip}%%%+\@heightpa-1\baselineskip}
+% \nopagebreak
+\fi
+% \the\heightfig:\the\heighttxt:\the\@heightpa:\the\@keodaipa
+\setlength{\heightfig}{0pt}
+\setlength{\widthfig}{0pt}
+\setlength{\@heightpa}{0pt}
+\setlength{\@keodaipa}{0pt}
+\fi
+}
+
+\AtBeginEnvironment{enumerate}{
+\setlength{\itemindent}{0em}
+\setlength{\parsep}{0cm}
+\setlength{\itemsep}{1ex}
+\setlength{\topsep}{0pt}
+\setlength{\parskip}{0pt}
+}
+
+\BeforeBeginEnvironment{window}{
+\newline\begin{minipage}[h]{\linewidth}
+}
+\AfterEndEnvironment{window}{
+\end{minipage}
+}
+%%%%%%%%%%%%%%%%%%%%%%%beamer
+\newcounter{socauhoi}
+\setcounter{socauhoi}{0}
+
+\def\@chucauhoi{\textcolor{\@mauchu}{\textbf{Câu }}}
+\newcommand{\chucauhoi}[1]{\renewcommand{\@chucauhoi}{\textcolor{\@mauchu}{\textbf{#1}}}}
+\def\causo{\@chucauhoi \@causo}
+\def\socau{\@causo}
+\def\@causo{\textcolor{\@mauchu}{\stepcounter{socauhoi}\textbf{\ifthenelse{\value{socauhoi}<10}{\thesocauhoi}{\thesocauhoi}.}}}
+\newcommand{\sotheo}[1]{
+\renewcommand{\@causo}{\textcolor{\@mauchu}{\stepcounter{socauhoi}\textbf{\ifthenelse{\value{socauhoi}<10}{#10\thesocauhoi}{#1\thesocauhoi}.}}}
+}
+
+%%%%%%%%%%%%%
+\def\indebai{
+\setcounter{socauhoi}{0}
+\showproblems
+\hideanswers
+\khongloigiai
+}
+\def\indebaidapan{
+\setcounter{socauhoi}{0}
+\showanswers
+\showproblems
+\khongloigiai
+}
+\def\indebailoigiai{
+\setcounter{socauhoi}{0}
+\showanswers
+\showproblems
+\coloigiai
+}
+\def\indapanrutgon{
+\setcounter{socauhoi}{-1}
+\khongloigiai
+\hideproblems
+\showanswers
+\lietkedafalse
+\nguondefalse
+% \khoanh{\cboxv}
+\lamphieurutgon
+}
+
+\def\indapanlietke{
+\setcounter{socauhoi}{-1}
+\khongloigiai
+\hideproblems
+\showanswers
+\lietkedatrue
+\nguondefalse
+% \khoanh{\cboxv}
+\khonglamphieu
+}
+
+\def\indapanso{
+\setcounter{socauhoi}{-1}
+\hideproblems
+\showanswers
+\khongloigiai
+\lietkedatrue
+\nguondefalse
+\khoanh{\cboxv}
+\khonglamphieu
+}
+\def\indapanchu{
+\setcounter{socauhoi}{-1}
+\khongloigiai
+\hideproblems
+\showanswers
+\lietkedatrue
+\nguondefalse
+\khoanh{}
+\khonglamphieu
+}
+\def\indapanloigiaio{
+\setcounter{socauhoi}{-1}
+\hideproblems
+\showanswers
+\coloigiai
+\khonglamphieu
+\lietkedafalse
+\nguondefalse
+\khoanh{\cboxv}
+}
+
+\def\indapanloigiai{
+\setcounter{socauhoi}{0}
+\showanswers
+\khongloigiai
+\hideproblems
+\coloigiai
+\lietkedatrue
+\khoanh{\cboxv}
+}
+\def\inloigiai{
+\setcounter{socauhoi}{0}
+\hideanswers
+\khongloigiai
+\hideproblems
+\nguondefalse
+\coloigiai
+\lietkedatrue
+\duongkefalse
+}
+
+
+\def\inphieuduclo{
+\setcounter{socauhoi}{-1}
+\hideproblems
+\showanswers
+\lamphieuduclo
+\khongloigiai
+\khoanh{\cboxx}
+\lietkedafalse
+\nguondefalse
+}
+\def\inphieuthi{
+\khoanh{\cboxx}
+\setcounter{socauhoi}{-1}
+\hideproblems
+ \showanswers
+ \lamphieu
+\nguondefalse
+\khongloigiai
+}
+
+%%%%%%%%%%%%%%%%%%%%%
+\newlength\spaceleft
+% \newbox\figbox
+% \newbox\textbox
+%%%%%%%%%%%%%%%%%
+\newcommand{\dathinhw}[3][r]{
+\settowidth\widthfig{#3}
+\settoheight{\heightfig}{\parbox{\widthfig}{#3}}
+\settoheight{\heighttxt}{\parbox{\dimexpr\linewidth-\widthfig}{#2}}
+\setlength{\spaceleft}{\dimexpr\pagegoal-\pagetotal-2\baselineskip}
+\ifdim \spaceleft<0pt%
+\relax
+\else \ifdim\heightfig>\spaceleft
+ \pagebreak
+\fi \fi%
+\if #1r
+\begin{window}[0,r,{#3}, { }] 
+#2
+\end{window}
+\else \if #1l
+\begin{window}[0,l,{#3}, { }] 
+#2
+\end{window}
+\fi \fi
+}
+
+\newcommand{\dathinhc}[2][1]{
+\if#11
+\par\parbox{#1\linewidth}{\centering #2}\par
+\else
+\par\parbox{#1\textwidth}{\centering #2}\par
+\fi
+}
+
+
+
+\newcommand{\dathaicot}{
+\renewcommand{\dathinhw}[3][r]{
+\if ##1r
+##2
+\parbox{\linewidth}{\centering ##3}
+\else \if ##1l
+##2
+\parbox{\linewidth}{\centering  ##3}
+\fi\fi
+}
+\renewcommand{\dathinhwf}[4][r]{
+\if ##1r
+##2
+\parbox{\linewidth}{\centering  ##3
+\figcaption{}##4}
+\else \if ##1l
+##2
+\parbox{\linewidth}{\centering  ##3
+\figcaption{}##4}
+\fi\fi
+}
+\renewcommand{\dathinhm}[3][r]{
+\if ##1r
+\quad\par
+\parbox{\linewidth}{\centering  ##3}
+##2
+\else \if ##1l
+\quad\par
+\parbox{\linewidth}{\centering  ##3}
+##2
+\fi\fi
+}
+\renewcommand{\dathinhmf}[4][r]{
+\if ##1r
+\quad\par
+\parbox{\linewidth}{\centering  ##3
+\figcaption{}##4}
+##2
+\else \if ##1l
+\quad\par
+\parbox{\linewidth}{\centering  ##3
+\figcaption{}##4}
+##2
+\fi\fi
+}
+}
+
+\newcommand{\datmotcot}{
+\renewcommand{\dathinhw}[3][r]{
+\settowidth\widthfig{##3}
+\settoheight{\heightfig}{\parbox{\widthfig}{##3}}
+\settoheight{\heighttxt}{\parbox{\dimexpr\linewidth-\widthfig}{##2}}
+\if ##1r
+\begin{window}[0,r,{##3}, { }] 
+##2
+\end{window}
+\else \if ##1l
+\begin{window}[0,l,{##3}, { }] 
+##2
+\end{window}
+\fi \fi
+}
+\renewcommand{\dathinhwf}[4][r]{
+\settowidth\widthfig{##3}
+\settoheight{\heightfig}{\parbox{\widthfig}{##3}}
+\settoheight{\heighttxt}{\parbox{\dimexpr\linewidth-\widthfig}{##2}}
+\if ##1r
+\begin{figwindow}[0,r,{\hspace*{0.1cm} ##3}, {##4}] 
+##2
+\end{figwindow}
+\else \if ##1l
+\begin{figwindow}[0,l,{\hspace*{0.1cm} ##3}, {##4}] 
+##2
+\end{figwindow}
+\fi \fi
+}
+\renewcommand{\dathinhm}[3][r]{
+\settowidth\widthfig{##3}
+\if ##1r
+\par\noindent
+\begin{minipage}{\linewidth-\widthfig-2em}
+##2
+\end{minipage}
+\quad
+\begin{minipage}{\widthfig}
+\centering
+##3
+\end{minipage}
+\par
+\else \if ##1l
+\par\noindent
+\begin{minipage}{\widthfig}
+\centering
+##3
+\end{minipage}
+\quad
+\begin{minipage}{\linewidth-\widthfig-2em}
+##2
+\end{minipage}
+\setlength{\widthfig}{0pt}
+\par
+\fi \fi
+}
+\renewcommand{\dathinhmf}[4][r]{
+\settowidth\widthfig{##3}
+\if ##1r
+\par\noindent
+\begin{minipage}{\linewidth-\widthfig-2em}
+##2
+\end{minipage}
+\quad
+\begin{minipage}{\widthfig}
+\centering
+##3
+\figcaption{}##4
+\end{minipage}
+\par
+\else \if ##1l
+\par\noindent
+\begin{minipage}{\widthfig}
+\centering
+##3
+\figcaption{}##4
+\end{minipage}
+\quad
+\begin{minipage}{\linewidth-\widthfig-2em}
+##2
+\end{minipage}
+\setlength{\widthfig}{0pt}
+\par
+\fi \fi
+}
+}
+
+\newcommand{\dathinhwf}[4][r]{
+\settowidth\widthfig{#3}
+\settoheight{\heightfig}{\parbox{\widthfig}{#3}}
+\settoheight{\heighttxt}{\parbox{\dimexpr\linewidth-\widthfig}{#2}}
+\if #1r
+\begin{figwindow}[0,r,{\hspace*{0.1cm} #3}, {#4}] 
+#2
+\end{figwindow}
+\else \if #1l
+\begin{figwindow}[0,l,{\hspace*{0.1cm} #3}, {#4}] 
+#2
+\end{figwindow}
+\fi \fi
+}
+
+\def\bohinh{\setlength{\widthfig}{0pt}}
+
+\newcommand{\dathinhm}[3][r]{
+\settowidth\widthfig{#3}
+\if #1r
+\par\noindent
+\begin{minipage}{\linewidth-\widthfig-2em}
+#2
+\end{minipage}
+\quad
+\begin{minipage}{\widthfig}
+\centering
+#3
+\end{minipage}
+\par
+\else \if #1l
+\par\noindent
+\begin{minipage}{\widthfig}
+\centering
+#3
+\end{minipage}
+\quad
+\begin{minipage}{\linewidth-\widthfig-2em}
+#2
+\end{minipage}
+\setlength{\widthfig}{0pt}
+\par
+\fi \fi
+}
+
+\newcommand{\dathinhmf}[4][r]{
+\settowidth\widthfig{#3}
+\if #1r
+\par\noindent
+\begin{minipage}{\linewidth-\widthfig-2em}
+#2
+\end{minipage}
+\quad
+\begin{minipage}{\widthfig}
+\centering
+#3
+\figcaption{}#4
+\end{minipage}
+\par
+\else \if #1l
+\par\noindent
+\begin{minipage}{\widthfig}
+\centering
+#3
+\figcaption{}#4
+\end{minipage}
+\quad
+\begin{minipage}{\linewidth-\widthfig-2em}
+#2
+\end{minipage}
+\setlength{\widthfig}{0pt}
+\par
+\fi \fi
+}
+
+\newcommand{\caseo}[1]{\left[\begin{aligned}#1\end{aligned}\right.}
+\newcommand{\case}[1]{\begin{cases}#1\end{cases}}
+%%%%%%%%%%%
+\def\soanthao{
+ \makeatletter
+ \newcommand{\dapan}[1]{\textbf{Đáp án ##1.}}
+\theoremstyle{definition}
+\newtheorem{question}{Câu}
+
+\renewcommand{\bonpa}[6][0]{%
+\ifthenelse{##1=0}{
+\setlength\fourthtabwidth{0.25\linewidth-\picwd-1.6\lwindowsep}
+\setlength\halftabwidth{0.5\linewidth-2\picwd-2\lwindowsep}
+\settowidth\widthcha{PA.##3}
+\settowidth\widthchb{PB.##4}%
+\settowidth\widthchc{PC.##5}%
+\settowidth\widthchd{PD.##6}%
+\ifdim\widthcha<\widthchb
+\setlength{\widthch}{\widthchb}
+\else%
+\setlength{\widthch}{\widthcha}
+\fi%
+\ifdim\widthch<\widthchc
+\setlength{\widthch}{\widthchc}
+\fi%
+\ifdim\widthch<\widthchd
+\setlength{\widthch}{\widthchd}
+\fi%
+\ifdim\widthch<\fourthtabwidth
+%      \setlength{\shortitemwidth}{\linewidth/4-3.1em}
+\setlength{\shortitemwidth}{\linewidth/4-1.4em}
+\else\ifdim\widthch<\halftabwidth
+\setlength{\shortitemwidth}{\linewidth/2-2em}
+        \else   
+\setlength{\shortitemwidth}{\linewidth-3em}
+      \fi
+\fi
+}{
+\ifcase##1
+\or
+\setlength{\shortitemwidth}{\linewidth-3em}
+\or
+\setlength{\shortitemwidth}{\linewidth/2-2em}
+\or
+\setlength{\shortitemwidth}{0.42\linewidth}
+\or
+\setlength{\shortitemwidth}{\linewidth/5-1.4em}
+\fi
+}
+\ifcase##2
+\sai{##3}\sai{##4}\sai{##5}\sai{##6}
+\or
+\dung{##3}\sai{##4}\sai{##5}\sai{##6}
+\or
+\sai{##3}\dung{##4}\sai{##5}\sai{##6}
+\or
+\sai{##3}\sai{##4}\dung{##5}\sai{##6}
+\or
+\sai{##3}\sai{##4}\sai{##5}\dung{##6}
+\or
+\or
+\or
+\or
+\or
+\or
+\or
+\or
+\dung{##3}\dung{##4}\sai{##5}\sai{##6}
+\or
+\dung{##3}\sai{##4}\dung{##5}\sai{##6}
+\or
+\dung{##3}\sai{##4}\sai{##5}\dung{##6}
+\else
+\ifthenelse{##2=23}
+{
+\sai{##3}\dung{##4}\dung{##5}\sai{##6}
+}{
+\ifthenelse{##2=24}
+{
+\sai{##3}\dung{##4}\sai{##5}\dung{##6}
+}{
+\ifthenelse{##2=34}
+{
+\sai{##3}\sai{##4}\dung{##5}\dung{##6}
+}{
+}}}
+\fi
+ }
+%%%%%%%%%%%%%%%%%%%%%
+\renewcommand{\baitracnghiem}[4]{
+\begin{question}\label{##1}
+\setlength{\widthfig}{0pt}
+\setlength{\heightfig}{0pt}
+\ifshowproblems ##2 \fi
+\begin{shortenumerate}
+##3
+\end{shortenumerate}
+\setcounter{@choice}{0}
+\end{question}
+\ifcholoigiai
+\ifduongke
+\par
+\noindent\dotfill\par
+\fi 
+\motdatrue
+\choloigiaifalse
+##3
+\setcounter{@choice}{0}
+##4 \hfill$\square$
+ \par
+\ifduongke
+\noindent\hrulefill
+\fi
+\choloigiaitrue
+\motdafalse
+\fi
+}
+%%%%%%%%%%%%%%%%%%%%%
+% 
+\newcommand{\baitracnghiemt}[4]{
+\begin{question}\label{##1}
+##2
+##3
+\end{question}
+\ifcholoigiai
+\ifduongke
+\par
+\noindent\dotfill\par
+\fi 
+\motdatrue\choloigiaifalse
+##3%%%
+\ifthenelse{\value{@choice}=4}{\setcounter{@choice}{0}}{}%%
+##4 % \hfill$\square$
+\par
+\ifduongke
+\noindent\hrulefill
+\fi
+\choloigiaitrue
+\motdafalse
+\fi
+
+}
+
+\renewcommand{\baituluan}[3]{
+\begin{question}\label{##1}
+\medskip
+\ifshowproblems 
+##2 
+\fi
+\begin{onlysolution}%
+ \par\medskip
+ \noindent \solutionname
+##3
+\end{onlysolution}%
+\end{question}
+}
+
+\makeatother
+
+}
+%%%%%%%%%%%%%
+% \begin{minipage}[t]{\linewidth-2em}%%
+% \noindent\hfill (#1)\par%%%
+% \end{minipage}%%%
+\newif\ifnguonde \nguondefalse
+\newcommand{\nguon}[1]{\ifnguonde\item[]\parbox{\linewidth-2em}{\hfill (#1)\par}\fi}
+%%%%%%%%%%%
+\def\soanquestion{
+ \makeatletter
+ \newcommand{\dapan}[1]{\textbf{Đáp án ##1.}}
+\theoremstyle{definition}
+\newtheorem{question}{Câu}
+
+\renewcommand{\bonpa}[6][0]{%
+\ifthenelse{##1=0}{
+\setlength\fourthtabwidth{0.25\linewidth-\picwd-1.6\lwindowsep}
+\setlength\halftabwidth{0.5\linewidth-2\picwd-2\lwindowsep}
+\settowidth\widthcha{PA.##3}
+\settowidth\widthchb{PB.##4}%
+\settowidth\widthchc{PC.##5}%
+\settowidth\widthchd{PD.##6}%
+\ifdim\widthcha<\widthchb
+\setlength{\widthch}{\widthchb}
+\else%
+\setlength{\widthch}{\widthcha}
+\fi%
+\ifdim\widthch<\widthchc
+\setlength{\widthch}{\widthchc}
+\fi%
+\ifdim\widthch<\widthchd
+\setlength{\widthch}{\widthchd}
+\fi%
+\ifdim\widthch<\fourthtabwidth
+%      \setlength{\shortitemwidth}{\linewidth/4-3.1em}
+\setlength{\shortitemwidth}{\linewidth/4-1.4em}
+\else\ifdim\widthch<\halftabwidth
+\setlength{\shortitemwidth}{\linewidth/2-2em}
+        \else   
+\setlength{\shortitemwidth}{\linewidth-3em}
+      \fi
+\fi
+}{
+\ifcase##1
+\or
+\setlength{\shortitemwidth}{\linewidth-3em}
+\or
+\setlength{\shortitemwidth}{\linewidth/2-2em}
+\or
+\setlength{\shortitemwidth}{0.42\linewidth}
+\or
+\setlength{\shortitemwidth}{\linewidth/5-1.4em}
+\fi
+}
+\ifcase##2
+\begin{shortenumerate}
+\sai{##3}\sai{##4}\sai{##5}\sai{##6}
+\end{shortenumerate}
+\or
+\begin{shortenumerate}
+\dung{##3}\sai{##4}\sai{##5}\sai{##6}
+\end{shortenumerate}
+\or
+\begin{shortenumerate}
+\sai{##3}\dung{##4}\sai{##5}\sai{##6}
+\end{shortenumerate}
+\or
+\begin{shortenumerate}
+\sai{##3}\sai{##4}\dung{##5}\sai{##6}
+\end{shortenumerate}
+\or
+\begin{shortenumerate}
+\sai{##3}\sai{##4}\sai{##5}\dung{##6}
+\end{shortenumerate}
+\or
+\or
+\or
+\or
+\or
+\or
+\or
+\or
+\begin{shortenumerate}
+\dung{##3}\dung{##4}\sai{##5}\sai{##6}
+\end{shortenumerate}
+\or
+\begin{shortenumerate}
+\dung{##3}\sai{##4}\dung{##5}\sai{##6}
+\end{shortenumerate}
+\or
+\begin{shortenumerate}
+\dung{##3}\sai{##4}\sai{##5}\dung{##6}
+\end{shortenumerate}
+\else
+\ifthenelse{##2=23}
+{
+\begin{shortenumerate}
+\sai{##3}\dung{##4}\dung{##5}\sai{##6}
+\end{shortenumerate}
+}{
+\ifthenelse{##2=24}
+{
+\begin{shortenumerate}
+\sai{##3}\dung{##4}\sai{##5}\dung{##6}
+\end{shortenumerate}
+}{
+\ifthenelse{##2=34}
+{
+\begin{shortenumerate}
+\sai{##3}\sai{##4}\dung{##5}\dung{##6}
+\end{shortenumerate}
+}{
+}}}
+\fi
+\setcounter{@choice}{0}
+ }
+\makeatother
+
+\def\loigiai##1{\ifcholoigiai
+ \item[]\begin{minipage}[t]{\linewidth}
+\noindent\dotfill\par
+\noindent\textbf{\textcolor{blue}{Lời giải.} }  ##1
+\hfill $\square$\par
+\noindent\hrulefill\par
+\end{minipage}
+\else \fi}
+}
+%%%%%%%%%%
+\def\dempa{
+\makeatletter
+\begin{center}
+\textbf{THỐNG KÊ ĐÁP ÁN ĐÚNG MỖI LOẠI}\\[0.3cm]
+\begin{tabular}{| l | l | l | l | l |}
+\hline
+\textbf{Phương án}&\cboxv{\textbf{A}}&\cboxv{\textbf{B}}&\cboxv{\textbf{C}}&\cboxv{\textbf{D}}\\ 
+\hline
+\textbf{Số đúng}&\the\value{@mot}&\the\value{@hai}&\the\value{@ba}&\the\value{@bon}\\ 
+\hline
+\end{tabular}
+\end{center}
+\setcounter{@mot}{0}
+\setcounter{@hai}{0}
+\setcounter{@ba}{0}
+\setcounter{@bon}{0}
+\makeatother
+\exceldemfalse
+}
+
+\newcommand{\dapanlietke}[1]{
+\begin{center}
+\textbf{ĐÁP ÁN LIỆT KÊ}
+\indapanlietke
+\begin{multicols}{10}
+\begin{enumerate}[\socau]
+\foreachproblem[#1]{\item\thisproblem}
+ \end{enumerate}
+\end{multicols}
+\end{center}
+}
+
+\newcommand{\dapanma}[1]{
+\indapanlietke
+\begin{center}
+\textbf{SỐ VÀ MÃ CÂU HỎI}
+\begin{multicols}{5}
+\begin{enumerate}[\socau]
+\foreachproblem[#1]{\item\thisproblemlabel}
+ \end{enumerate}
+\end{multicols}
+\end{center}
+}
+
+\newcounter{ct}
+\newcommand{\dienbang}[1][25]{
+\ifnum\value{socauhoi}=#1  
+\writefile{\string\\ }
+\writefile{\string\cline{1-#1}}
+\ifthenelse{#1=25}{
+ \writefile{\string\forloop{ct}{26}{\string\value{ct}<51}{\string\arabic{ct}&} }
+}{
+\ifthenelse{#1=20}{
+\writefile{21&22&23&24&25&26&27&28&29&30&31&32&33&34&35&36&37&38&39&40&}%
+}{
+\ifthenelse{#1=10}{
+\writefile{11&12&13&14&15&16&17&18&19&20&}%
+}{
+}
+}
+}
+\writefile{\string\\ }
+\writefile{\string\cline{1-#1}}
+\fi
+}
+
+\newcommand{\lapbang}[1][25]{
+\begin{center}
+\textbf{ĐÁP ÁN THEO BẢNG}\\[0.5cm]
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{*{#1}{|c}|c} 
+\cline{1-#1}
+\ifthenelse{#1=25}{
+ \forloop{ct}{1}{\value{ct}<26}{\arabic{ct}&}\\
+}{
+\ifthenelse{#1=20}{
+ \forloop{ct}{1}{\value{ct}<21}{\arabic{ct}&}\\
+% 
+}{
+\ifthenelse{#1=10}{
+ \forloop{ct}{1}{\value{ct}<11}{\arabic{ct}&}\\
+}{
+}
+}
+}
+\cline{1-#1}
+\input bangdapan.tex \\
+\cline{1-#1}
+\end{tabular}
+\end{center}
+}
+
+\newcommand{\lapcauhoi}[1]{
+\begin{enumerate}[]
+\foreachproblem[#1]{\item\causo\addcontentsline{toc}{subsubsection}{Câu \thesocauhoi.\thisproblemlabel}\thisproblem\dienbang[20]}
+ \end{enumerate}
+}
+
+\def\demexcel{
+\setcounter{@mot}{0}
+\setcounter{@hai}{0}
+\setcounter{@ba}{0}
+\setcounter{@bon}{0}
+\exceldemtrue
+\immediate\openout\tempfile=dapan\@madethi.xls
+}
+
+\newcommand{\dapanexcel}{
+\immediate\closeout\tempfile
+\begin{center}
+\textbf{ĐÁP ÁN TRONG TỆP EXCEL}\\[0.3cm]
+ \input{dapan\@madethi.xls}
+\end{center}
+\exceldemfalse
+}
+%%%%%%%%%%%%%%%%%%%%
+\newcommand{\indebaima}[2][0]{
+\ifcase#1 %%0- Đề bài có tiêu đề
+\foreach \x in {#2}{
+\indebai
+\setcounter{page}{1}
+\loaidethi{(Đề gồm có \getpagerefnumber{db\x} trang)}
+\trangcuoi{db\x}
+\madethi{\x}
+\lamtieude
+\begin{enumerate}[] 
+\foreachproblem[\x]{\item\causo\thisproblem}
+\end{enumerate}
+\centerline{------- \textbf{HẾT} -------}
+\label{db\x}
+\newpage
+}
+\or %%1-Đề bài không tiêu đề
+\indebai
+\begin{enumerate}[] 
+\foreach \x in {#2}{
+\foreachproblem[\x]{\item\causo\thisproblem}
+}
+\end{enumerate}
+\or %%2-Đề bài 2 cột
+\foreach \x in {#2}{
+\indebai
+\setcounter{page}{1}
+\loaidethi{(Đề gồm có \getpagerefnumber{dbhc\x} trang)}
+\trangcuoi{dbhc\x}
+\madethi{\x}
+\lamtieude
+\begin{multicols}{2}
+\begin{enumerate}[] 
+\foreachproblem[\x]{\item\causo\thisproblem}
+\end{enumerate}
+\end{multicols}
+\centerline{------- \textbf{HẾT} -------}
+\label{dbhc\x}
+\newpage
+}
+\or %%3-In đề có dòng trắng
+\foreach \x in {#2}{
+\indebai
+\setcounter{page}{1}
+\loaidethi{(Đề gồm có \getpagerefnumber{dbdt\x} trang)}
+\trangcuoi{dbdt\x}
+\madethi{\x}
+\lamtieude
+\begin{enumerate}[] 
+\foreachproblem[\x]{\item\causo\thisproblem
+\textbf{\textcolor{blue}{Lời giải.}}\\
+\text{ }\dotfill\\[1ex]
+\text{ }\dotfill\\[1ex]
+\text{ }\dotfill
+}
+\end{enumerate}
+\centerline{------- \textbf{HẾT} -------}
+\label{dbdt\x}
+\newpage
+}
+\or%%4- In tep dưa vào bàng \input
+\indebai
+\setcounter{page}{1}
+\loaidethi{(Đề gồm có \getpagerefnumber{dbpage} trang)}
+\trangcuoi{dbpage}
+\madethi{#2}
+\lamtieude
+\begin{enumerate}[] 
+\foreachproblem[default]{\item\causo\thisproblem}
+\end{enumerate}
+\centerline{------- \textbf{HẾT} -------}
+\label{dbpage}
+\or %%5-In có ma cau hoi o dau
+\indebai
+\begin{enumerate}[] 
+\foreach \x in {#2}{
+\foreachproblem[\x]{\item\causo[\textcolor{red}{\textbf{\thisproblemlabel}}]\thisproblem}
+}
+\end{enumerate}
+\or %%6-n dóng câu số
+\foreach \x in {#2}{
+\setcounter{page}{1}
+\loaidethi{(Đề gồm có \getpagerefnumber{dbds\x} trang)}
+\trangcuoi{dbds\x}
+\madethi{\x}
+\lamtieude
+\indebai
+\setcounter{socauhoi}{-1}
+\begin{enumerate}[\causo] 
+\foreachproblem[\x]{\item\thisproblem}
+\end{enumerate}
+\centerline{------- \textbf{HẾT} -------}
+\label{dbds\x}
+\newpage
+}
+\or
+\foreach \x in {#2}{
+\indebai
+\demexcel
+\setcounter{page}{1}
+\loaidethi{(Đề gồm có \getpagerefnumber{dbex\x} trang)}
+\trangcuoi{dbex\x}
+\madethi{\x}
+\lamtieude
+\begin{enumerate}[] 
+\foreachproblem[\x]{\item\causo\thisproblem\dienbang}
+\end{enumerate}
+\immediate\closeout\tempfile
+\immediate\closeout\file
+\centerline{------- \textbf{HẾT} -------}
+\label{dbex\x}
+\newpage
+}
+\fi
+}
+%%%%%%%
+%%%%%%%
+\newcommand{\inphieuthima}[3][0]{
+\chucauhoi{Câu }
+\ifcase#1 %%0-có tiêu đề
+\madethi{\fbox{\phantom{O}}\fbox{\phantom{O}}\fbox{\phantom{O}}}
+\lamphieuthi
+ \inphieuthi
+\begin{multicols}{#2}
+\begin{enumerate}[\causo]
+\foreach \x in {#3}{
+ \foreachproblem[\x]{\item\thisproblem}
+}
+\end{enumerate}
+\end{multicols}
+\or %%%1-không có tiêu đề
+ \inphieuthi
+\begin{multicols}{#2}
+\begin{enumerate}[\causo]
+\foreach \x in {#3}{
+ \foreachproblem[\x]{\item\thisproblem}
+}
+\end{enumerate}
+\end{multicols}
+\or %%%2- Phiếu đục lỗ có tiêu đề
+\foreach \x in {#3}{
+\madethi{\x}
+\lamphieuthi
+% \lamtieude
+\inphieuduclo
+\begin{center}
+\begin{multicols}{#2}
+\begin{enumerate}[\causo]
+\foreachproblem[\x]{\item\thisproblem}
+\end{enumerate}
+\end{multicols}
+\end{center}
+\newpage
+}
+\or %%%3-Phiếu đục lỗ không tiêu đề
+\inphieuduclo
+% \lamphieuthi
+\begin{center}
+\begin{multicols}{#2}
+\begin{enumerate}[\causo]
+\foreach \x in {#3}{
+\foreachproblem[\x]{\item\thisproblem}
+}
+\end{enumerate}
+\end{multicols}
+\end{center}
+\or %%4-Làm phiếu thi mặc đinh
+\madethi{#3}
+\lamphieuthi
+ \inphieuthi
+\begin{multicols}{#2}
+\begin{enumerate}[\causo]
+% \foreach \x in {#3}{
+ \foreachproblem[default]{\item\thisproblem}
+% }
+\end{enumerate}
+\end{multicols}
+\fi
+}
+%%%%%%%%%%%
+\newcommand{\indapanma}[3][0]{
+\setlength{\columnsep}{0pt}
+\setlength{\columnseprule}{0pt}
+\ifcase#1 %%0
+\chucauhoi{}
+\thispagestyle{empty}
+\foreach \x in {#3}{
+\indapanso
+\begin{center}
+\textbf{ĐÁP ÁN MÃ ĐỀ \x}
+\end{center}
+\begin{center}
+\begin{multicols}{#2}
+\begin{enumerate}[\causo]
+\foreachproblem[\x]{\item\thisproblem}
+\end{enumerate}
+\end{multicols}
+\end{center}
+}
+\or %%%1
+\indapanso
+\chucauhoi{}
+\begin{center}
+\begin{multicols}{#2}
+\begin{enumerate}[\causo]
+\foreach \x in {#3}{
+\foreachproblem[\x]{\item\thisproblem}
+}
+\end{enumerate}
+\end{multicols}
+\end{center}
+\or %%%2
+\indapanlietke
+\begin{multicols}{3}
+\begin{enumerate}[\causo]
+\foreach \x in {#3}{
+\foreachproblem[\x]{\item\thisproblem}
+}
+\end{enumerate}
+\end{multicols}
+\or %%%3
+\chucauhoi{Câu }
+\indapanrutgon
+\begin{multicols}{3}
+\begin{enumerate}[\causo]
+\foreach \x in {#3}{
+\foreachproblem[\x]{\item\thisproblem}
+}
+\end{enumerate}
+\end{multicols}
+\or %%4
+\chucauhoi{}
+\thispagestyle{empty}
+\indapanso
+\begin{center}
+\textbf{ĐÁP ÁN MÃ ĐỀ #3}
+\end{center}
+\begin{center}
+\begin{multicols}{#2}
+\begin{enumerate}[\causo]
+\foreachproblem[default]{\item\thisproblem}
+\end{enumerate}
+\end{multicols}
+\end{center}
+\or  %%5
+\chucauhoi{}
+\foreach \x in {#3}{
+\indapanlietke
+\begin{center}
+\textbf{SỐ VÀ MÃ CÂU HỎI CỦA MÃ ĐỀ \x}
+\end{center}
+\begin{center}
+\begin{multicols}{#2}
+\begin{enumerate}[]
+\foreachproblem[\x]{\item\causo\thisproblemlabel}
+\end{enumerate}
+\end{multicols}
+\end{center}
+}
+\fi
+\chucauhoi{Câu }
+}
+%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%
+\newcommand{\inloigiaima}[2][0]{
+\ifcase#1%%0- có tiêu đề
+\foreach \x in {#2}{
+\setcounter{page}{1}
+\loaidethi{(Đề gồm có \getpagerefnumber{dblg\x} trang)}%
+\trangcuoi{dblg\x}
+\madethi{\x}
+\lamtieude
+\indebailoigiai
+\begin{center}
+{\bf ĐỀ BÀI - ĐÁP ÁN - LỜI GIẢI}
+\end{center}
+\begin{enumerate}[]
+\foreachproblem[\x]{\item\causo\thisproblem}
+\end{enumerate}
+\label{dblg\x}
+\newpage
+}
+\or %%1-Không có tiêu đề
+\indebailoigiai
+\begin{enumerate}[]
+\foreach \x in {#2}{
+\foreachproblem[\x]{\item\causo\thisproblem}
+}
+\end{enumerate}
+\or %%2- In de bai dap an có tiêu đề
+\foreach \x in {#2}{
+\setcounter{page}{1}
+\loaidethi{(Đề gồm có \getpagerefnumber{dbda\x} trang)}%
+\trangcuoi{dbda\x}
+\madethi{\x}
+\lamtieude
+\indebaidapan
+\begin{center}
+{\bf ĐỀ BÀI - ĐÁP ÁN}
+\end{center}
+\begin{enumerate}[]
+\foreachproblem[\x]{\item\causo\thisproblem}
+\end{enumerate}
+\label{dbda\x}
+\newpage
+}
+\or %%3 Chỉ in lời giaicó tiêu đề
+\foreach \x in {#2}{
+\setcounter{page}{1}
+\loaidethi{(Đề gồm có \getpagerefnumber{lg\x} trang)}%
+\trangcuoi{lg\x}
+\madethi{\x}
+\lamtieude
+\inloigiai
+\begin{center}
+{\bf  \textcolor{blue}{LỜI GIẢI}}
+\end{center}
+% \setcounter{socauhoi}{-1}
+\begin{enumerate}[]
+\foreachproblem[\x]{\item\thisproblem}
+\end{enumerate}
+\label{lg\x}
+\newpage
+}
+\or %%4- in de bai loi giai trong \input
+\indebailoigiai
+\setcounter{page}{1}
+\loaidethi{(Đề gồm có \getpagerefnumber{lgpage} trang)}
+\trangcuoi{lgpage}
+\madethi{#2}
+\lamtieude
+\begin{enumerate}[]
+\foreachproblem[default]{\item\causo\thisproblem}
+\end{enumerate}
+\label{lgpage}
+\or %%5- In de bai va dap an không tiêu đề
+\indebaidapan
+\begin{enumerate}[]
+\foreach \x in {#2}{
+\foreachproblem[\x]{\item\causo\thisproblem}
+}
+\end{enumerate}
+\or %%6 Chỉ in lời giai không tiêu đề
+\inloigiai
+\begin{enumerate}[]
+\foreach \x in {#2}{
+\foreachproblem[\x]{\item\thisproblem}
+}
+\end{enumerate}
+\or %%7- In lời giả 2 cột
+\foreach \x in {#2}{
+\setcounter{page}{1}
+\loaidethi{(Đề gồm có \getpagerefnumber{lghc\x} trang)}%
+\trangcuoi{lghc\x}
+\madethi{\x}
+\lamtieude
+\inloigiai
+\begin{center}
+{\bf  \textcolor{blue}{LỜI GIẢI}}
+\end{center}
+\setlength{\columnsep}{15pt}
+\begin{multicols}{2}
+\begin{enumerate}[]
+\foreachproblem[\x]{\item\thisproblem}
+\end{enumerate}
+\end{multicols}
+\label{lghc\x}
+\newpage
+}
+\or %%8- In 2 cột de bai dap an có tiêu đề
+\foreach \x in {#2}{
+\setcounter{page}{1}
+\loaidethi{(Đề gồm có \getpagerefnumber{dbdahc\x} trang)}%
+\trangcuoi{dbdahc\x}
+\madethi{\x}
+\lamtieude
+\indebailoigiai
+\begin{center}
+{\bf ĐỀ BÀI - ĐÁP ÁN - LỜI GIẢI}
+\end{center}
+\setlength{\columnsep}{15pt}
+\begin{multicols}{2}
+\begin{enumerate}[]
+\foreachproblem[\x]{\item\causo\thisproblem}
+\end{enumerate}
+\end{multicols}
+\label{dbdahc\x}
+\newpage
+}
+\fi
+}
+
+\newcommand{\incauma}[3][default]{
+\ifcase#2 %%0-theomacau
+\showproblems
+\hideanswers
+\khongloigiai
+\begin{enumerate}[]
+\foreach \x in {#3}{
+\item \causo \useproblem[#1]{\x}
+}
+\end{enumerate}
+\or %%1-Đề bài và lời giải câu mã
+\showanswers
+\showproblems
+\coloigiai
+\begin{enumerate}[]
+\foreach \x in {#3}{
+\item \causo \useproblem[#1]{\x}
+}
+\end{enumerate}
+\or %%2- In Đề bài và đáp án
+\showanswers
+\showproblems
+\khongloigiai
+\begin{enumerate}[]
+\foreach \x in {#3}{
+\item \causo \useproblem[#1]{\x}
+}
+\end{enumerate}
+\or %%3- In chỉ lời giải
+\hideanswers
+\khongloigiai
+\hideproblems
+\nguondefalse
+\coloigiai
+\lietkedatrue
+\duongkefalse
+\begin{enumerate}[]
+\foreach \x in {#3}{
+\item  \useproblem[#1]{\x}
+}
+\end{enumerate}
+\or %%4 in đề bài lời giải
+\showanswers
+\showproblems
+\coloigiai
+\begin{enumerate}[]
+\foreach \x in {#3}{
+\item\causo  \useproblem[#1]{\x}
+}
+\end{enumerate}
+\fi
+}
+%%%%%%%%%
+% \newcommand{\choncauma}[4][default]{
+% \foreach \x in {#3}{
+% \loadselectedproblems[#1]{#2\x}{#4}
+% }
+% }
+%%%%%%%%%%%%
+\newcommand{\choncauma}[4][default]{
+\foreach \x in {#3}{
+\loadselectedproblems[#1]{#2\x}{#4}
+}
+}
+%%%%%%%%%%%%
+\def\@datnhan{db}
+\newcommand{\datnhan}[1]{\renewcommand{\@datnhan}{#1}}
+
+\newcommand{\timma}[3][0]{
+\ifcase#1%%0 - in co tieu de
+\foreach \x in {#2}{
+\setcounter{socauhoi}{0}
+\setcounter{page}{1}
+\loaidethi{(Đề gồm có \getpagerefnumber{\@datnhan\x} trang)}
+\trangcuoi{\@datnhan\x}
+\madethi{\x}
+\lamtieude
+\begin{enumerate}[] 
+\foreach \y in {#3}{
+\IfInteger{\y}{%%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\ifshowproblems
+\item\causo\thisproblem
+\else
+\item\thisproblem
+\fi
+}{}}{
+\IfSubStr{\thisproblemlabel}{:\y}{
+\ifshowproblems
+\item\causo\thisproblem
+\else
+\item\thisproblem
+\fi
+}{}}}}{%%Ký tự
+ \foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\ifshowproblems
+\item\causo\thisproblem
+\else
+\item\thisproblem
+\fi
+}{}}}}
+\ifnum\value{socauhoi}=0
+\item \textbf{KHÔNG CÓ: #3}
+\fi
+ \end{enumerate}
+\label{\@datnhan\x}
+\newpage
+}
+\or%%1 - in cau hoi
+\begin{enumerate}[] 
+\foreach \x in {#2}{%
+\foreach \y in {#3}{%
+\IfInteger{\y}{%%là số
+\foreachproblem[\x]{%
+\ifthenelse{\y<10}{%
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\ifshowproblems
+\item\causo\thisproblem
+\else
+\item\thisproblem
+\fi
+}{}}{
+\IfSubStr{\thisproblemlabel}{:\y}{
+\ifshowproblems
+\item\causo\thisproblem
+\else
+\item\thisproblem
+\fi
+}{}}}}{%%Ký tự
+\foreachproblem[\x]{%%
+\IfSubStr{\thisproblemlabel}{\y}{%%
+\ifshowproblems%%
+\item\causo\thisproblem%%
+\else%%
+\item\thisproblem%%
+\fi%%
+}{}}}}}
+\ifnum\value{socauhoi}=0
+\textbf{KHÔNG CÓ: #3}
+\fi
+\end{enumerate}
+\or %%2. In ma cau hoi o dau
+\begin{enumerate}[] 
+\foreach \x in {#2}{
+\foreach \y in {#3}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\causo(\textcolor{red}{\textbf{\thisproblemlabel}})\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{:\y}{
+\item\causo(\textcolor{red}{\textbf{\thisproblemlabel}})\thisproblem
+}{}
+}}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo(\textcolor{red}{\textbf{\thisproblemlabel}})\thisproblem
+}{}
+}}}}
+\ifnum\value{socauhoi}=0
+\item \textbf{KHÔNG CÓ: #3}
+\fi
+\end{enumerate}
+\or %%3.. in dong cau hoi
+\foreach \x in {#2}{
+\setcounter{socauhoi}{-1}
+\setcounter{page}{1}
+\loaidethi{(Đề gồm có \getpagerefnumber{\@datnhan\x} trang)}
+\trangcuoi{\@datnhan\x}
+\madethi{\x}
+\lamtieude
+\begin{enumerate}[\causo] 
+\foreach \y in {#3}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{:\y}{
+\item\thisproblem
+}{}
+}}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}}}
+\ifnum\value{socauhoi}=0
+\item \textbf{KHÔNG CÓ: #3}
+\fi
+\end{enumerate}
+\label{\@datnhan\x}
+\newpage
+}
+\or %%4-dong câu hoi không tiêu đề
+\setcounter{socauhoi}{-1}
+\begin{enumerate}[\causo]
+\foreach \x in {#2}{
+\foreach \y in {#3}{
+\IfInteger{\y}{%%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{:\y}{
+\item\thisproblem
+}{}
+}}
+}{%%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}}}}
+\ifnum\value{socauhoi}=0
+\textbf{KHÔNG CÓ: #3}
+\fi
+\end{enumerate}
+\fi
+}
+
+%%%%%%%%%%%%%
+
+%%%%%%%%
+\newcommand{\indebailoc}[3][0]{
+\ifcase#1 %%0 - in co tieu de
+\foreach \x in {#2}{
+\indebai
+\setcounter{page}{1}
+\loaidethi{(Đề gồm có \getpagerefnumber{db\x} trang)}
+\trangcuoi{db\x}
+\madethi{\x}
+\lamtieude
+%%%%%%%
+\begin{enumerate}[] 
+\foreach \y in {#3}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\causo\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblem
+}{}
+}}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblem
+}{}
+}}}
+\ifnum\value{socauhoi}=0
+\item \textbf{KHÔNG CÓ: #3}
+\fi
+ \end{enumerate}
+\label{db\x}
+\newpage
+}
+\or  %%1 - in cau hoi
+\indebai
+\begin{enumerate}[] 
+\foreach \x in {#2}{
+\foreach \y in {#3}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\causo\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblem
+}{}
+}
+}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblem
+}{}
+}}}}
+\ifnum\value{socauhoi}=0
+\item \textbf{KHÔNG CÓ: #3}
+\fi
+ \end{enumerate}
+\or %% 2-  In cau hoi 2 cot
+\indebai
+\begin{multicols}{2}
+% \ngatcau{-2}
+\begin{enumerate}[] 
+\foreach \x in {#2}{
+\foreach \y in {#3}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\causo\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblem
+}{}
+}
+}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblem
+}{}
+}}}}
+\ifnum\value{socauhoi}=0
+\item \textbf{KHÔNG CÓ: #3}
+\fi
+ \end{enumerate}
+\end{multicols}
+\or %%3 - In cau hoi có cho dong loi giai
+\indebai
+\begin{enumerate}[] 
+\foreach \x in {#2}{
+\foreach \y in {#3}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\causo\thisproblem
+\textbf{\textcolor{blue}{Lời giải.}}\\
+\text{ }\dotfill\\[1ex]
+\text{ }\dotfill\\[1ex]
+\text{ }\dotfill\\
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblem
+\textbf{\textcolor{blue}{Lời giải.}}\\
+\text{ }\dotfill\\[1ex]
+\text{ }\dotfill\\[1ex]
+\text{ }\dotfill\\
+}{}
+}}
+}{%%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblem
+\textbf{\textcolor{blue}{Lời giải.}}\\
+\text{ }\dotfill\\[1ex]
+\text{ }\dotfill\\[1ex]
+\text{ }\dotfill\\
+}{}
+}}}}
+\ifnum\value{socauhoi}=0
+\item \textbf{KHÔNG CÓ: #3}
+\fi
+\end{enumerate}
+\or %%4- In đầu vào \input
+\indebai
+\setcounter{page}{1}
+\loaidethi{(Đề gồm có \getpagerefnumber{db#2} trang)}
+\trangcuoi{db#2}
+\madethi{#2}
+\lamtieude
+\begin{enumerate}[] 
+\foreach \y in {#3}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[default]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\causo\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblem
+}{}
+}
+}
+}{  %%Ký tự
+\foreachproblem[default]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblem
+}{}
+}}}
+\ifnum\value{socauhoi}=0
+\item \textbf{KHÔNG CÓ: #3}
+\fi
+\end{enumerate}
+\label{db#2}
+\or %%5. In ma cau hoi o dau
+\indebai
+\begin{enumerate}[] 
+\foreach \x in {#2}{
+\foreach \y in {#3}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\causo[\textcolor{red}{\textbf{\thisproblemlabel}}]\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo[\textcolor{red}{\textbf{\thisproblemlabel}}]\thisproblem
+}{}
+}}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo[\textcolor{red}{\textbf{\thisproblemlabel}}]\thisproblem
+}{}
+}}}}
+\ifnum\value{socauhoi}=0
+\item \textbf{KHÔNG CÓ: #3}
+\fi
+\end{enumerate}
+\or %%6.. in nguon goc
+\nguondetrue
+\indebai
+\begin{enumerate}[] 
+\foreach \x in {#2}{
+\foreach \y in {#3}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\causo\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblem
+}{}
+}}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblem
+}{}
+}}}}
+\ifnum\value{socauhoi}=0
+\item \textbf{KHÔNG CÓ: #3}
+\fi
+\end{enumerate}
+\nguondefalse
+\fi
+}
+
+%%%%%%%%%%%
+\newcommand{\inloigiailoc}[3][0]{
+\ifcase#1 %%0. In đề bài và lg co tieu de
+\foreach \x in {#2}{
+\setcounter{page}{1}
+\loaidethi{(Đề gồm có \getpagerefnumber{dblg\x} trang)}%
+\trangcuoi{dblg\x}
+\madethi{\x}
+\lamtieude
+\indebailoigiai
+\begin{center}
+{\bf ĐỀ BÀI - ĐÁP ÁN - LỜI GIẢI}
+\end{center}
+\begin{enumerate}[] 
+\foreach \y in {#3}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\causo\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{:\y}{
+\item\causo\thisproblem
+}{}
+}}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblem
+}{}
+}}}
+\ifnum\value{socauhoi}=0
+\item \textbf{KHÔNG CÓ: #3}
+\fi
+\end{enumerate}
+\label{dblg\x}
+}
+\or %%%1 In đề bài và đáp án loeì giả không ttiêu đề 
+\indebailoigiai
+\begin{enumerate}[] 
+\foreach \x in {#2}{
+\foreach \y in {#3}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\causo\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{:\y}{
+\item\causo\thisproblem
+}{}
+}}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblem
+}{}
+}}}}
+\ifnum\value{socauhoi}=0
+\item \textbf{KHÔNG CÓ: #3}
+\fi
+ \end{enumerate}
+\or %%2 In đề bài với đánh dấu đáp án
+\indebaidapan
+\begin{enumerate}[] 
+\foreach \x in {#2}{
+\foreach \y in {#3}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\causo\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblem
+}{}
+}
+}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblem
+}{}
+}}}}
+\ifnum\value{socauhoi}=0
+\item \textbf{KHÔNG CÓ: #3}
+\fi
+ \end{enumerate}
+\or %%3 Chi in loi giai
+\inloigiai
+\begin{enumerate}[] 
+\foreach \x in {#2}{
+\foreach \y in {#3}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{:\y}{
+\item\thisproblem
+}{}
+}}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}}}}
+\ifnum\value{socauhoi}=0
+\item \textbf{KHÔNG CÓ: #3}
+\fi
+ \end{enumerate}
+\or %%4 In với đưa vào theo \input
+\setcounter{page}{1}
+\loaidethi{(Đề gồm có \getpagerefnumber{lgpage} trang)}
+\trangcuoi{lgpage}
+\madethi{#2}
+\lamtieude
+\indebailoigiai
+\begin{enumerate}[] 
+\foreach \y in {#3}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[default]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\causo\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblem
+}{}
+}
+}
+}{  %%Ký tự
+\foreachproblem[default]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblem
+}{}
+}}}
+\ifnum\value{socauhoi}=0
+\item \textbf{KHÔNG CÓ: #3}
+\fi
+ \end{enumerate}
+\label{lgpage}
+\or %%5-In đề bai, lời giải với ma cau hỏi
+\indebailoigiai
+\begin{enumerate}[] 
+\foreach \x in {#2}{
+\foreach \y in {#3}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\causo[\textcolor{red}{\textbf{\thisproblemlabel}}]\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo[\textcolor{red}{\textbf{\thisproblemlabel}}]\thisproblem
+}{}
+}}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo[\textcolor{red}{\textbf{\thisproblemlabel}}]\thisproblem
+}{}
+}}}}
+\ifnum\value{socauhoi}=0
+\item \textbf{KHÔNG CÓ: #3}
+\fi
+ \end{enumerate}
+\or  %%%6-in kem nguon goc
+\indebaidapan
+\nguondetrue
+\begin{enumerate}[] 
+\foreach \x in {#2}{
+\foreach \y in {#3}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\causo\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblem
+}{}
+}}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblem
+}{}
+}}
+}}
+\ifnum\value{socauhoi}=0
+\item \textbf{KHÔNG CÓ: #3}
+\fi
+ \end{enumerate}
+\nguondefalse 
+\fi
+}
+%%%%%%%%%%%%%%%%%
+\newcommand{\timdapan}[4][0]{
+\setlength{\columnsep}{0pt}
+\setlength{\columnseprule}{0pt}
+\ifcase#1 %%0 có tiêu đề
+% \chucauhoi{}
+\thispagestyle{empty}
+%%%%%%%%%
+\foreach \x in {#3}{
+% \indapanso
+\begin{center}
+\textbf{ĐÁP ÁN MÃ ĐỀ \x}
+\end{center}
+\begin{center}
+\begin{multicols}{#2}
+\begin{enumerate}[\causo]
+\foreach \y in {#4}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{:\y}{
+\item\thisproblem
+}{}
+}}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}}}
+\ifnum\value{socauhoi}=0
+\item[] \textbf{KHÔNG CÓ: #4}
+\fi
+ \end{enumerate}
+\end{multicols}
+\end{center}
+}
+\chucauhoi{Câu }
+\or %%1 Không có tiêu đề
+% \indapanso
+% \chucauhoi{}
+\begin{center}
+\begin{multicols}{#2}
+\begin{enumerate}[\causo] 
+\foreach \x in {#3}{
+\foreach \y in {#4}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}
+}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}}}}
+\ifnum\value{socauhoi}=0
+\item[] \textbf{KHÔNG CÓ: #4}
+\fi
+\end{enumerate}
+\end{multicols}
+\end{center}
+\chucauhoi{Câu }
+\or  %%2 In ra mã câu hỏi
+\setcounter{socauhoi}{0}
+\begin{center}
+\textbf{SỐ VÀ MÃ CÂU HỎI CỦA MÃ ĐỀ #3}
+\end{center}
+\begin{center}
+\begin{multicols}{#2}
+\begin{enumerate}[]
+\foreach \x in {#3}{
+\foreach \y in {#4}{
+\IfInteger{\y}{%%là số
+\foreachproblem[\x]{%
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{%
+\item\causo\thisproblemlabel%
+}{}
+}{%
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblemlabel%
+}{}
+}
+}
+}{%%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblemlabel%
+}{}
+}}}}
+\ifnum\value{socauhoi}=0
+\item[] \textbf{KHÔNG CÓ: #4}
+\fi
+\end{enumerate}
+\end{multicols}
+\end{center}
+\or %%3 In ra phiếu thi
+%  \lamphieuthi
+%  \inphieuthi
+ \lamphieuthi
+\chucauhoi{Câu }
+\begin{multicols}{#2}
+\begin{enumerate}[\causo]
+\foreach \x in {#3}{
+\foreach \y in {#4}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}
+}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}
+}
+}
+}
+\end{enumerate}
+\end{multicols}
+ \or  %%7, In phiếu đục lỗ
+\inphieuduclo
+\lamphieuthi
+\chucauhoi{Câu }
+\begin{multicols}{#2}
+\begin{enumerate}[\causo]
+\foreach \x in {#3}{
+\foreach \y in {#4}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}
+}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}
+}
+}
+}
+\end{enumerate}
+\end{multicols}
+ \or  %%8.In phiếu thi không tiêu đề
+ \inphieuthi
+\chucauhoi{Câu }
+\begin{multicols}{#2}
+\begin{enumerate}[\causo]
+\foreach \x in {#3}{
+\foreach \y in {#4}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}
+}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}}}}
+\ifnum\value{socauhoi}=0
+\item[] \textbf{KHÔNG CÓ: #4}
+\fi
+\end{enumerate}
+\end{multicols}
+\fi
+\chucauhoi{Câu }
+}
+
+%%%%%%%%%%%%%%%%%
+\newcommand{\indapanloc}[4][0]{
+\setlength{\columnsep}{0pt}
+\setlength{\columnseprule}{0pt}
+\ifcase#1 %%0 có tiêu đề
+\chucauhoi{}
+\thispagestyle{empty}
+%%%%%%%%%
+\foreach \x in {#3}{
+\indapanso
+\begin{center}
+\textbf{ĐÁP ÁN MÃ ĐỀ \x}
+\end{center}
+\begin{center}
+\begin{multicols}{#2}
+\begin{enumerate}[\causo]
+\foreach \y in {#4}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{:\y}{
+\item\thisproblem
+}{}
+}}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}}}
+\ifnum\value{socauhoi}=0
+\item[] \textbf{KHÔNG CÓ: #4}
+\fi
+ \end{enumerate}
+\end{multicols}
+\end{center}
+}
+\or %%1 Không có tiêu đề
+\indapanso
+\chucauhoi{}
+\begin{center}
+\begin{multicols}{#2}
+\begin{enumerate}[\causo] 
+\foreach \x in {#3}{
+\foreach \y in {#4}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}
+}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}}}}
+\ifnum\value{socauhoi}=0
+\item[] \textbf{KHÔNG CÓ: #4}
+\fi
+\end{enumerate}
+\end{multicols}
+\end{center}
+\or %% 2 Có chữ câu
+\indapanlietke
+\begin{multicols}{#2}
+\begin{enumerate}[\causo]
+\foreach \x in {#3}{
+\foreach \y in {#4}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}
+}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}}}}
+\ifnum\value{socauhoi}=0
+\item[] \textbf{KHÔNG CÓ: #4}
+\fi
+\end{enumerate}
+\end{multicols}
+\or %%3 Đáp án rút gọn
+\chucauhoi{Câu }
+\indapanrutgon
+\begin{multicols}{#2}
+\begin{enumerate}[\causo]
+\foreach \x in {#3}{
+\foreach \y in {#4}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}
+}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}}}}
+\ifnum\value{socauhoi}=0
+\item[] \textbf{KHÔNG CÓ: #4}
+\fi
+\end{enumerate}
+\end{multicols}
+\or %%4 in từ tệp đưa vao bằng \input
+\chucauhoi{}
+\thispagestyle{empty}
+\indapanso
+\begin{center}
+\textbf{ĐÁP ÁN MÃ ĐỀ #3}
+\end{center}
+\begin{center}
+\begin{multicols}{#2}
+\begin{enumerate}[\causo]
+% \foreach \x in {#3}{
+\foreach \y in {#4}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[default]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}
+}
+}{  %%Ký tự
+\foreachproblem[default]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}}}
+\ifnum\value{socauhoi}=0
+\item[] \textbf{KHÔNG CÓ: #4}
+\fi
+\end{enumerate}
+\end{multicols}
+\end{center}
+\or  %%5 In ra mã câu hỏi
+\chucauhoi{}
+% \indapanlietke
+\indapanso
+\setcounter{socauhoi}{0}
+\begin{center}
+\textbf{SỐ VÀ MÃ CÂU HỎI CỦA MÃ ĐỀ #3}
+\end{center}
+\begin{center}
+\begin{multicols}{#2}
+\begin{enumerate}[]
+\foreach \x in {#3}{
+\foreach \y in {#4}{
+\IfInteger{\y}{%%là số
+\foreachproblem[\x]{%
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{%
+\item\causo\thisproblemlabel%
+}{}
+}{%
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblemlabel%
+}{}
+}
+}
+}{%%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\causo\thisproblemlabel%
+}{}
+}}}}
+\ifnum\value{socauhoi}=0
+\item[] \textbf{KHÔNG CÓ: #4}
+\fi
+\end{enumerate}
+\end{multicols}
+\end{center}
+\or %%6 In ra phiếu thi
+\lamphieuthi
+\inphieuthi
+\chucauhoi{Câu }
+\begin{multicols}{#2}
+\begin{enumerate}[\causo]
+\foreach \x in {#3}{
+\foreach \y in {#4}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}
+}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}
+}
+}
+}
+\end{enumerate}
+\end{multicols}
+ \or  %%7, In phiếu đục lỗ
+\inphieuduclo
+\lamphieuthi
+\chucauhoi{Câu }
+\begin{multicols}{#2}
+\begin{enumerate}[\causo]
+\foreach \x in {#3}{
+\foreach \y in {#4}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}
+}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}
+}
+}
+}
+\end{enumerate}
+\end{multicols}
+ \or  %%8.In phiếu thi không tiêu đề
+ \inphieuthi
+\chucauhoi{Câu }
+\begin{multicols}{#2}
+\begin{enumerate}[\causo]
+\foreach \x in {#3}{
+\foreach \y in {#4}{
+\IfInteger{\y}{ %%là số
+\foreachproblem[\x]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\item\thisproblem
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}
+}
+}{  %%Ký tự
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}}}}
+\ifnum\value{socauhoi}=0
+\item[] \textbf{KHÔNG CÓ: #4}
+\fi
+\end{enumerate}
+\end{multicols}
+\fi
+\chucauhoi{Câu }
+}
+
+%%%%%%%%%%%%
+
+%%%%%%%%%%
+\newcommand{\inphieuthiloc}[4][0]{
+\chucauhoi{Câu }
+\ifcase#1 %%0. Làm phiếu thi có tiêu đề
+\lamphieuthi
+\inphieuthi
+\begin{multicols}{#2}
+\begin{enumerate}[\causo]
+\foreach \y in {#4}{
+\foreach \x in {#3}{
+ \foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}
+}
+}
+\end{enumerate}
+\end{multicols}
+\or %%%1. Phiếu không có tiêu đề
+ \inphieuthi
+\begin{multicols}{#2}
+\begin{enumerate}[\causo]
+\foreach \y in {#4}{
+\foreach \x in {#3}{
+ \foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}
+}
+}
+\end{enumerate}
+\end{multicols}
+\or %%%2. Phiếu đục lỗ
+\inphieuduclo
+\lamphieuthi
+\begin{center}
+\begin{multicols}{#2}
+\begin{enumerate}[\causo]
+\foreach \y in {#4}{
+\foreach \x in {#3}{
+\foreachproblem[\x]{
+\IfSubStr{\thisproblemlabel}{\y}{
+\item\thisproblem
+}{}
+}
+}
+}
+\end{enumerate}
+\end{multicols}
+\end{center}
+\fi
+}
+
+%%%%%%%%%%%
+\newenvironment{intieude}[1][100]
+{%
+\setcounter{page}{1}
+\loaidethi{(Đề gồm có \getpagerefnumber{\@datnhan#1} trang)}
+\trangcuoi{\@datnhan#1}
+ \madethi{#1}
+\def\datnhan{\label{\@datnhan#1}}
+\lamtieude
+}{
+\datnhan
+\newpage
+}
+%%%%%%%%%%
+
+\newcommand\fboxv[1]{\tikz[baseline=(char.base)]{
+             \node[shape=rectangle,draw,inner sep=4pt, fill=yellow!40] (char) {\color{red}\bf#1};}}
+
+\newcommand\fboxw[1]{\tikz[baseline=(char.base)]{
+             \node[shape=rectangle,draw,inner sep=4pt, fill=white] (char) {\color{black}\bf #1};}}
+
+\newcommand\cboxx[1]{\tikz[baseline=(char.base)]{
+            \node[shape=circle,draw,inner sep=1pt, fill=green!10] (char) {#1};}}
+
+\newcommand\cboxv[1]{\tikz[baseline=(char.base)]{\node[shape=circle,draw=blue,inner sep=1pt,fill=yellow!40] (char) {\color{red}\bf #1};}}
+
+\newcommand\cboxt[1]{\tikz[baseline=(char.base)]{\node[shape=circle,draw=blue,inner sep=1pt,fill=white] (char) {\color{black}\bf #1};}}
+
+\def\canpa{\phantom{$\dfrac{1}{2}$}}%%%%%%%%%%%%%%%%%
+
+\newcommand{\indebaiphieuthima}[3][0]{
+\ifcase #1 %%0-
+\foreach \x in {#2}{
+\indebai
+\setcounter{page}{1}
+\loaidethi{(Đề gồm có \getpagerefnumber{db\x} trang)}
+\trangcuoi{db\x}
+\madethi{\x}
+\lamtieude
+\begin{multicols}{2}
+#3
+% \includegraphics[scale =0.75]{50Q}
+\begin{enumerate}[] 
+\foreachproblem[\x]{\item\causo\thisproblem}
+\end{enumerate}
+\end{multicols}
+\centerline{------- \textbf{HẾT} -------}
+\label{db\x}
+\newpage
+}
+\or %%1-
+\foreach \x in {#2}{
+\indebai
+\setcounter{page}{1}
+\loaidethi{(Đề gồm có \getpagerefnumber{db\x} trang)}
+\trangcuoi{db\x}
+\madethi{\x}
+\lamtieude
+\setcounter{socauhoi}{0}
+\begin{multicols}{2}
+#3
+% \includegraphics[scale =0.73]{50Q}
+\vbox{
+\foreachproblem[\x]{
+\ifnum\value{socauhoi}<3
+\begin{enumerate}[]
+\item\causo\thisproblem
+ \end{enumerate}
+\fi}
+}
+\end{multicols}
+\vspace*{-2cm}
+\noindent
+\setcounter{socauhoi}{0}
+\foreachproblem[\x]{
+\ifnum\value{socauhoi}<3
+\relax
+\stepcounter{socauhoi}
+\else
+\begin{enumerate}[]
+\item\causo\thisproblem
+ \end{enumerate}
+\fi
+}
+\centerline{------- \textbf{HẾT} -------}
+\label{db\x}
+\newpage
+}
+\or %%2-in hai cột
+\foreach \x in {#2}{
+\indebai
+\setcounter{page}{1}
+\loaidethi{(Đề gồm có \getpagerefnumber{db\x} trang)}
+\trangcuoi{db\x}
+\madethi{\x}
+\lamtieude
+% \setcounter{socauhoi}{0}
+\begin{multicols}{2}
+% \includegraphics[scale =0.73]{50Q}
+#3
+\begin{enumerate}[]
+\foreachproblem[\x]{\item\causo\thisproblem}
+ \end{enumerate}
+\end{multicols}
+\centerline{------- \textbf{HẾT} -------}
+\label{db\x}
+\newpage
+}
+\fi
+}
+%%%%%%%%%%%%%
+\newcommand{\choncauso}[3][default]{
+ \loadallproblems[a#1]{#3}
+\foreach \y in {#2}{
+\foreachproblem[a#1]{
+\ifthenelse{\y<10}{
+\IfSubStr{\thisproblemlabel}{:0\y}{
+\loadselectedproblems[#1]{\thisproblemlabel}{#3}
+}{}
+}{
+\IfSubStr{\thisproblemlabel}{:\y}{
+\loadselectedproblems[#1]{\thisproblemlabel}{#3}
+}{}
+}}
+}}
+
+\newcommand{\timdapanma}[3][10]{
+\setcounter{socauhoi}{0}
+\begin{center}
+\textbf{ĐÁP ÁN  MÃ #2}
+\end{center}
+\chucauhoi{}
+\indapanso
+\begin{center}
+\begin{multicols}{#1}
+\timma[4]{#2}{#3}
+\end{multicols}
+\end{center}
+}
+%%%%%%%
+%%%%%%%%%%%Trinh chieu beamer
+\newcommand{\beamertn}[1][0]{
+\ifcase#1
+\stepcounter{socauhoi}
+\showproblems
+\khongloigiai
+\begin{frame}{\tenkythi}
+\begin{beamerboxesrounded}[upper=uppercol,lower=lowercol,shadow=true]{\textcolor{white}{\textbf{Câu \thesocauhoi.}}}
+\begin{enumerate}[]
+\item\causo\thisproblem
+ \end{enumerate}
+\end{beamerboxesrounded}
+\end{frame}
+\begin{frame}[allowframebreaks,squeeze]{Hướng dẫn câu \thesocauhoi}
+\showproblems
+\showanswers
+\khongloigiai
+\begin{beamerboxesrounded}[upper=uppercol,lower=lowercol,shadow=true]{\textcolor{white}{\textbf{Câu \thesocauhoi.}}}
+{\itshape
+\begin{enumerate}[]
+\item\thisproblem
+ \end{enumerate}
+}
+\end{beamerboxesrounded}
+\hideproblems
+\coloigiai
+ \nguondefalse
+\hideanswers
+\begin{enumerate}[] 
+\item\thisproblem
+ \end{enumerate}
+\end{frame}
+\or
+\stepcounter{socauhoi}
+\showproblems
+\khongloigiai
+\begin{frame}{\tenkythi}
+\begin{beamerboxesrounded}[upper=uppercol,lower=lowercol,shadow=true]{\textcolor{white}{\textbf{Câu \thesocauhoi.}}}
+\begin{enumerate}[]
+\item\causo\thisproblem
+ \end{enumerate}
+\end{beamerboxesrounded}
+\end{frame}
+\begin{frame}[allowframebreaks,squeeze]{Hướng dẫn câu \thesocauhoi}
+\showproblems
+\showanswers
+\khongloigiai
+{\itshape
+\begin{enumerate}[]
+\item \textbf{\fboxv{\textbf{Câu \thesocauhoi}}} \thisproblem 
+ \end{enumerate}
+}
+\hideproblems
+\coloigiai
+ \nguondefalse
+\hideanswers
+\begin{enumerate}[] 
+\item\thisproblem
+ \end{enumerate}
+\end{frame}
+\or
+\stepcounter{socauhoi}
+\showproblems
+\khongloigiai
+\hideanswers
+\begin{frame}{\tenkythi}
+\begin{enumerate}[]
+\item \textbf{\fboxv{\textbf{Câu \thesocauhoi}}} \thisproblem
+ \end{enumerate}
+\end{frame}
+\showanswers
+\showproblems
+\coloigiai
+\begin{frame}[allowframebreaks]{Hướng dẫn câu \thesocauhoi}
+\begin{enumerate}[]
+\item\textbf{\fboxv{\textbf{Câu \thesocauhoi}}} \thisproblem
+ \end{enumerate}
+\end{frame}
+\or %%3-tcolorbox
+\stepcounter{socauhoi}
+\showproblems
+ \nguondetrue
+\khongloigiai
+\begin{frame}[allowframebreaks,squeeze]{\tenkythi}
+\begin{myboxt}{\textbf{Câu \thesocauhoi}}
+\begin{enumerate}[]
+\item\causo\thisproblem
+ \end{enumerate}
+\end{myboxt}
+\end{frame}
+\begin{frame}[allowframebreaks,squeeze]{Hướng dẫn câu \thesocauhoi}
+\showproblems
+\showanswers
+\khongloigiai
+\begin{myboxt}{\textbf{Câu \thesocauhoi}}
+{\itshape
+\begin{enumerate}[]
+\item\thisproblem
+ \end{enumerate}
+}
+\end{myboxt}
+\hideproblems
+\coloigiai
+ \nguondefalse
+\hideanswers
+\begin{enumerate}[] 
+\item\thisproblem
+ \end{enumerate}
+\end{frame}
+\or %%4-tcolorbox
+\stepcounter{socauhoi}
+\showproblems
+ \nguondetrue
+\khongloigiai
+\begin{frame}[allowframebreaks,squeeze]{\tenkythi}
+\begin{myboxt}{\textbf{Câu \thesocauhoi}}
+\begin{enumerate}[]
+\item\causo\thisproblem
+ \end{enumerate}
+\end{myboxt}
+\end{frame}
+\begin{frame}[allowframebreaks,squeeze]{Hướng dẫn câu \thesocauhoi}
+\showproblems
+\showanswers
+\khongloigiai
+\ifthenelse{#1=0}{
+\begin{myboxt}{\textbf{Câu \thesocauhoi}}
+{\itshape
+\begin{enumerate}[]
+\item\thisproblem
+ \end{enumerate}
+}
+\end{myboxt}
+}{
+{\itshape
+\begin{enumerate}[]
+\item \textbf{\fboxv{\textbf{Câu \thesocauhoi}}} \thisproblem 
+ \end{enumerate}
+}}
+\hideproblems
+\coloigiai
+ \nguondefalse
+\hideanswers
+\begin{enumerate}[] 
+\item\thisproblem
+ \end{enumerate}
+\end{frame}
+\fi
+}
+%%%%%%%%%%%%
+\newcommand{\beamertl}{
+\stepcounter{socauhoi}
+\begin{frame}{\tenkythi}
+\showproblems
+\hideanswers
+\begin{beamerboxesrounded}[upper=uppercol,lower=lowercol,shadow=true]{\textcolor{white}{\textbf{Câu \thesocauhoi.}}}
+\begin{enumerate}[]
+\item\thisproblem
+ \end{enumerate}
+\end{beamerboxesrounded}
+\end{frame}
+\begin{frame}[allowframebreaks]{Hướng dẫn câu \thesocauhoi}
+\showproblems
+\hideanswers
+{\itshape
+\begin{enumerate}[]
+\item \textbf{\fboxv{\thesocauhoi}} \thisproblem
+ \end{enumerate}
+}
+\showanswers
+\hideproblems
+\begin{enumerate}[] 
+\item\thisproblem
+ \end{enumerate}
+\end{frame}
+}
+%%%%%%%%%%%%%%%
+\newcommand{\komatn}[1][0]{
+\ifcase#1
+\duongkefalse
+\stepcounter{socauhoi}
+\showproblems
+\khongloigiai
+\mybox{0.97\linewidth}{
+\begin{enumerate}[]
+\item\textbf{\fboxv{\textbf{Câu \thesocauhoi}}} \thisproblem
+ \end{enumerate}
+}
+\clearpage
+\showproblems
+\showanswers
+\khongloigiai
+\mybox{0.97\linewidth}{
+{\itshape
+\begin{enumerate}[]
+\item \textbf{\fboxv{\textbf{Câu \thesocauhoi}}} \thisproblem 
+ \end{enumerate}
+}}
+\bigskip
+\hideproblems
+\coloigiai
+ \nguondefalse
+\hideanswers
+\begin{enumerate}[] 
+\item\thisproblem
+ \end{enumerate}
+\clearpage
+\or
+\stepcounter{socauhoi}
+\showproblems
+\khongloigiai
+\mybox{0.97\linewidth}{
+\begin{enumerate}[]
+\item\textbf{\fboxv{\textbf{Câu \thesocauhoi}}} \thisproblem
+ \end{enumerate}
+}
+\clearpage
+\showproblems
+\showanswers
+\khongloigiai
+{\itshape
+\begin{enumerate}[]
+\item \textbf{\fboxv{\textbf{Câu \thesocauhoi}}} \thisproblem 
+ \end{enumerate}
+}%%
+\hideproblems
+\coloigiai
+ \nguondefalse
+\hideanswers
+\begin{enumerate}[] 
+\item\thisproblem
+ \end{enumerate}
+\clearpage
+\or
+\stepcounter{socauhoi}
+\showproblems
+\khongloigiai
+\begin{enumerate}[]
+\item\textbf{\fboxv{\textbf{Câu \thesocauhoi}}} \thisproblem
+ \end{enumerate}
+\clearpage
+\showproblems
+\showanswers
+\khongloigiai
+{\itshape
+\begin{enumerate}[]
+\item \textbf{\fboxv{\textbf{Câu \thesocauhoi}}} \thisproblem 
+ \end{enumerate}
+} %%
+\hideproblems
+\coloigiai
+ \nguondefalse
+\hideanswers
+\begin{enumerate}[] 
+\item\thisproblem
+ \end{enumerate}
+\clearpage
+\or %%dùng tcolorbox
+\stepcounter{socauhoi}
+\showproblems
+\nguondetrue
+\khongloigiai
+\begin{myboxt}[colback=yellow!30,colbacktitle=red]{\textbf{Câu \thesocauhoi}}
+\begin{enumerate}[]
+\item \thisproblem
+ \end{enumerate}
+\end{myboxt}
+\clearpage
+\showproblems
+\showanswers
+\khongloigiai
+\begin{myboxt}[colback=yellow!10,colbacktitle=green]{\textbf{Câu \thesocauhoi}}
+{\itshape
+\begin{enumerate}[]
+\item  \thisproblem 
+ \end{enumerate}
+}
+\end{myboxt}
+\hideproblems
+\coloigiai
+ \nguondefalse
+\hideanswers
+\begin{enumerate}[] 
+\item\thisproblem
+ \end{enumerate}
+\clearpage
+\fi
+}
+
+%%%%%%%%%%%%
+\newcommand{\pdfscreentn}[1][0]{
+\ifcase#1
+\stepcounter{socauhoi}
+\begin{enumerate}[]
+\showproblems
+\hideanswers
+\khongloigiai
+\begin{slide}
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title= \textbf{Câu \thesocauhoi} ]
+\small
+\item\hspace*{-1em}{\itshape\thisproblem}
+\end{tcolorbox}
+\end{slide}
+ \end{enumerate}
+\showanswers
+\showproblems
+\khongloigiai
+\begin{enumerate}[]
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title= \textbf{Câu \thesocauhoi} ]
+\item{\itshape\thisproblem}
+\end{tcolorbox}
+ \end{enumerate}
+\hideproblems
+\coloigiai
+\nguondefalse
+\hideanswers
+ \begin{minipage}{0.85\textwidth}
+\begin{enumerate}[]
+\item \thisproblem
+ \end{enumerate}
+ \end{minipage}
+\or
+\stepcounter{socauhoi}
+\begin{enumerate}[]
+\showproblems
+\hideanswers
+\khongloigiai
+\begin{slide}
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title= \textbf{Câu \thesocauhoi} ]
+\small
+\item\hspace*{-1.5em}{\itshape\thisproblem}
+\end{tcolorbox}
+\end{slide}
+ \end{enumerate}
+\showanswers
+\showproblems
+\khongloigiai
+\begin{minipage}{0.85\textwidth}
+\begin{enumerate}[]
+\item\textbf{Câu \thesocauhoi.}\hspace*{-1em}{\itshape\thisproblem}
+ \end{enumerate}
+\hideproblems
+\coloigiai
+\nguondefalse
+\hideanswers
+\begin{enumerate}[]
+\item \thisproblem
+ \end{enumerate}
+\end{minipage}
+\or
+\stepcounter{socauhoi}
+\begin{enumerate}[]
+\showproblems
+\hideanswers
+\khongloigiai
+\begin{slide}
+\begin{minipage}{0.85\textwidth}
+% \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title= \textbf{Câu \thesocauhoi.} ]
+%  \small
+\item\textbf{Câu \thesocauhoi.}\hspace*{-1em}{\itshape\thisproblem}
+% \end{tcolorbox}
+\end{minipage}
+\end{slide}
+ \end{enumerate}
+\showanswers
+\showproblems
+\khongloigiai
+\begin{minipage}{0.85\textwidth}
+\begin{enumerate}[]
+\item\textbf{Câu \thesocauhoi.}\hspace*{-1em}{\itshape\thisproblem}
+ \end{enumerate}
+\hideproblems
+\coloigiai
+\nguondefalse
+\hideanswers
+\begin{enumerate}[]
+\item \thisproblem
+ \end{enumerate}
+\end{minipage}
+\fi
+}
+%%%%%%%%%%%
+\def\pdfscreentl{%
+\begin{enumerate}[]
+\showproblems%
+\hideanswers%
+\begin{slide}\small
+\begin{tcolorbox}[colback=blue!5!white,width=0.6\linewidth,colframe=blue!75!black,title=\stepcounter{socauhoi} \textbf{Câu \thesocauhoi.} ]
+\item\hspace*{-1em}{\itshape\thisproblem}
+\end{tcolorbox}
+\end{slide}
+ \end{enumerate}
+\showanswers%
+\begin{enumerate}[]\large
+\item \textcolor[rgb]{1.0,0.0,0.0}{\textbf{Câu \thesocauhoi.}}\thisproblem
+ \end{enumerate}
+}
+%%%%%%%
+% \newcommand{\figcaption}[1]{\def\@captype{figure}\caption{#1}}
+% \newcommand{\tblcaption}[1]{\def\@captype{table}\caption{#1}}
+ }{} %%%%Hêtbaitap{ }
+\endinput
+
+%%6:57:40 18/7/2017Last Modification of contents
+%%0:28:43 9/8/2017Last Modification of contents
+%%8:36:2 8/11/2017Last Modification of contents
